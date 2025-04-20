@@ -6,8 +6,57 @@ if (isset($_POST['submit'])) {
     $email = mysqli_real_escape_string($con, $_POST['email']);
     $password = mysqli_real_escape_string($con, $_POST['password']);
 
-    $hashed_password = hash("sha256", $password);
-    $query = "SELECT * FROM users WHERE email='$email' AND password='$hashed_password'";
+    // 1. نجهز النص اللي عايزين نبعتو للموديل (الإيميل + الباسورد)
+    $text_to_check = array("text" => $email, $password);
+
+    // 2. نجهز البيانات في JSON علشان نبعتها للموديل
+    $api_url = 'http://10.173.200.20:5000/predict'; // عنوان الـ Flask API
+
+    $data = json_encode(['text' => $text_to_check]); // تحويل البيانات إلى JSON
+
+    // 3. نستخدم cURL علشان نبعت البيانات للموديل
+    $ch = curl_init($api_url); // نبدأ جلسة cURL
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // نحدد إن الرد يكون كـ نص
+    curl_setopt($ch, CURLOPT_POST, true); // نحدد نوع الطلب POST
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $data); // نبعث البيانات
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json',
+        'Content-Length: ' . strlen($data) // نحدد طول البيانات
+    ]);
+
+    $response = curl_exec($ch); // تنفيذ الطلب
+
+    curl_close($ch); // غلق جلسة cURL
+
+    $responseData = json_decode($response, true); // تحويل الرد من JSON إلى Array
+
+
+    // 5. إذا كان الموديل كشف تهديد (مثل SQL Injection)، نمنع تسجيل الدخول
+    if (isset($responseData['predictions'][0])) {
+        // استخراج التنبؤ من الرد
+        $prediction = $responseData['predictions'][0];
+
+        echo "<pre>Prediction response: " . $prediction . "</pre>";  // عرض التنبؤ للمساعدة في التصحيح
+
+        // إذا كانت النتيجة 1، نقوم بحظر تسجيل الدخول
+        if ($prediction == 1) {
+            echo "<div class='message'>
+                <p>Login attempt blocked due to suspicious input (code: $prediction).</p>
+              </div>";
+            //  exit(); // إيقاف عملية تسجيل الدخول
+        } else {
+            echo "<div class='message'>
+                <p>Login input looks safe. Proceeding with authentication...</p>
+              </div>";
+        }
+    } else {
+        echo "<div class='message'>
+            <p>Error: Unable to get prediction from the model.</p>
+          </div>";
+        exit();
+    }
+    // 6. لو البيانات سليمة، نكمل البحث عن المستخدم في قاعدة البيانات
+    $query = "SELECT * FROM users WHERE email='$email' AND password='$password'";
     $result = mysqli_query($con, $query) or die("Query error: " . mysqli_error($con));
     $row = mysqli_fetch_assoc($result);
 
@@ -27,15 +76,18 @@ if (isset($_POST['submit'])) {
 
         // Redirect based on the role
         if ($row['role'] === 'admin') {
-            header("Location: home.php");
+            header("Location: home.php"); // Admin profile page
         } elseif ($row['role'] === 'soc_analyst') {
-            header("Location: views/SOC_ANA.php");
+            header("Location: soc_analyst.php"); // SOC Analyst dashboard
         } else {
-            header("Location: user_profile.php");
+            header("Location: user_profile.php"); // Normal user profile page
         }
         exit();
     } else {
-        $login_error = "Invalid email or password!";
+        // Show error if login fails
+        echo "<div class='message'>
+            <p>Invalid email or password!</p>
+        </div>";
     }
 }
 ?>
@@ -44,11 +96,13 @@ if (isset($_POST['submit'])) {
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/style.css">
+
     <style>
+        /* Basic styling for the entire body */
         body {
             font-family: Arial, sans-serif;
             background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
@@ -58,6 +112,7 @@ if (isset($_POST['submit'])) {
             padding: 0;
         }
 
+        /* Container to center content */
         .container {
             display: flex;
             justify-content: center;
@@ -65,6 +120,7 @@ if (isset($_POST['submit'])) {
             height: 100vh;
         }
 
+        /* Form box styling */
         .box.form-box {
             background-color: rgba(0, 0, 0, 0.6);
             padding: 30px;
@@ -75,12 +131,14 @@ if (isset($_POST['submit'])) {
             text-align: center;
         }
 
+        /* Header of the login form */
         header {
             font-size: 24px;
             margin-bottom: 20px;
             color: #fff;
         }
 
+        /* Input field styling */
         .field.input {
             margin-bottom: 20px;
         }
@@ -102,7 +160,7 @@ if (isset($_POST['submit'])) {
             color: #fff;
         }
 
-        .field input[type="submit"] {
+        .field input {
             width: 100%;
             padding: 5px;
             font-size: 16px;
@@ -113,13 +171,15 @@ if (isset($_POST['submit'])) {
             border: none;
         }
 
-        .field input[type="submit"]:hover {
+        .field input:hover {
             background-color: #C0392B;
         }
 
+        /* Link for sign up */
         .link {
             margin-top: 10px;
             color: #34495E;
+
         }
 
         .link a {
@@ -131,6 +191,7 @@ if (isset($_POST['submit'])) {
             text-decoration: underline;
         }
 
+        /* Message display after form submission */
         .message {
             background-color: #f39c12;
             color: white;
@@ -139,30 +200,18 @@ if (isset($_POST['submit'])) {
             border-radius: 5px;
         }
 
+        /* Style for the "Sign Up" link */
         .sign-up-link a {
             text-decoration: none;
             color: skyblue;
             font-weight: bold;
+            /* Make the link bold */
         }
 
         .sign-up-link a:hover {
             text-decoration: underline;
             color: #16A085;
-        }
-
-        #togglePassword {
-            cursor: pointer;
-            color: skyblue;
-            float: right;
-            margin-top: -30px;
-            margin-right: 10px;
-            position: relative;
-            z-index: 1;
-        }
-
-        #errorBox {
-            color: yellow;
-            margin: 10px 0;
+            /* Change color on hover */
         }
     </style>
 </head>
@@ -171,62 +220,24 @@ if (isset($_POST['submit'])) {
     <div class="container">
         <div class="box form-box">
             <header>Login</header>
-
-            <?php if (isset($login_error)): ?>
-                <div class="message"><?php echo $login_error; ?></div>
-            <?php endif; ?>
-
-            <form id="loginForm" action="" method="post">
+            <form action="" method="post">
                 <div class="field input">
                     <label for="email">Email</label>
-                    <input type="email" name="email" id="email" autocomplete="off" required />
+                    <input type="email" name="email" id="email" autocomplete="off" required>
                 </div>
                 <div class="field input">
                     <label for="password">Password</label>
-                    <input type="password" name="password" id="password" autocomplete="off" required />
-                    <span id="togglePassword">👁️ Show</span>
+                    <input type="password" name="password" id="password" autocomplete="off" required>
                 </div>
                 <div class="field">
-                    <input type="submit" name="submit" id="submitBtn" class="btn" value="Login" />
+                    <input type="submit" name="submit" class="btn" value="Login">
                 </div>
                 <div class="link">
                     Don't have an account? <span class="sign-up-link"><a href="register.php">Sign Up</a></span>
                 </div>
-                <div id="errorBox"></div>
             </form>
         </div>
     </div>
-
-    <script>
-        document.getElementById('togglePassword').addEventListener('click', function () {
-            const passwordInput = document.getElementById('password');
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            this.textContent = type === 'password' ? '👁️ Show' : '🙈 Hide';
-        });
-
-        document.getElementById('loginForm').addEventListener('submit', function (e) {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value.trim();
-            const errorBox = document.getElementById('errorBox');
-
-            if (!email || !password) {
-                e.preventDefault();
-                errorBox.textContent = "من فضلك املأ جميع الحقول.";
-                return;
-            }
-
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                e.preventDefault();
-                errorBox.textContent = "البريد الإلكتروني غير صحيح.";
-                return;
-            }
-
-            errorBox.textContent = "";
-            document.getElementById('submitBtn').value = "جاري الدخول...";
-        });
-    </script>
 </body>
 
 </html>

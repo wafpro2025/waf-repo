@@ -24,4 +24,3 @@ function log_activity($user_id, $activity, $ip_address)
     }
     $stmt->close();
 }
-?>

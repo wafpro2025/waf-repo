@@ -62,7 +62,7 @@ if (isset($_POST['upload_pic'])) {
             <a href="home.php">Logo</a>
         </div>
         <div class="nav-links">
-            <a href="Change_Profile.php">Change Profile</a>
+            <a href="edit.php">Change Profile</a>
             <a href="php/logout.php"><button class="btn logout-btn">Log Out</button></a>
         </div>
     </nav>
@@ -93,7 +93,7 @@ if (isset($_POST['upload_pic'])) {
 
             <!-- ✅ أزرار الإجراءات -->
             <div class="profile-actions">
-                <a href="Change_Profile.php"><button class="btn">Edit Profile</button></a>
+                <a href="edit.php"><button class="btn">Edit Profile</button></a>
                 <a href="change_password.php"><button class="btn">Change Password</button></a>
                 <a href="delete_account.php"><button class="btn delete-btn">Delete Account</button></a>
             </div>

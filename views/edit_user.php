@@ -85,14 +85,14 @@ if (isset($_POST['submit'])) {
             });
 
             // AJAX form submission
-            form.addEventListener('submit', function (e) {
+            form.addEventListener('submit', function(e) {
                 e.preventDefault();
 
                 const formData = new FormData(form);
                 const request = new XMLHttpRequest();
                 request.open("POST", "edit_user.php?id=<?php echo $user_id; ?>", true);
 
-                request.onload = function () {
+                request.onload = function() {
                     const responseMessage = document.getElementById('response-message');
                     if (request.status === 200) {
                         const response = JSON.parse(request.responseText);

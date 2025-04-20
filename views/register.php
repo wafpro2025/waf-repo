@@ -162,9 +162,8 @@
               </div>";
                     echo "<a href='javascript:self.history.back()'><button class='btn'>Go Back</button></a>";
                 } else {
-                    $hashed_password = hash("sha256", $password);
                     // Insert user into database
-                    mysqli_query($con, "INSERT INTO users (username, email, Age, Password) VALUES('$username','$email','$Age','$hashed_password')")
+                    mysqli_query($con, "INSERT INTO users (username, email, Age, Password) VALUES('$username','$email','$Age','$password')")
                         or die("Error Occurred");
 
                     // Display success message
@@ -174,7 +173,7 @@
                     echo "<a href='index.php'><button class='btn'>Login Now</button></a>";
                 }
             } else {
-                ?>
+            ?>
                 <header>Sign Up</header>
                 <form action="" method="post">
                     <div class="field input">

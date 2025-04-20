@@ -134,39 +134,6 @@ $role = $userData['role'];
             text-decoration: underline;
         }
     </style>
-    <style>
-        .toast {
-            visibility: hidden;
-            min-width: 250px;
-            margin-left: -125px;
-            background-color: #28a745;
-            color: #fff;
-            text-align: center;
-            border-radius: 4px;
-            padding: 12px;
-            position: fixed;
-            z-index: 1;
-            left: 50%;
-            bottom: 30px;
-            font-size: 17px;
-        }
- 
-        .toast.show {
-            visibility: visible;
-            -webkit-animation: fadein 0.5s, fadeout 0.5s 3s;
-            animation: fadein 0.5s, fadeout 0.5s 3s;
-        }
- 
-        @keyframes fadein {
-            from {bottom: 0; opacity: 0;}
-            to {bottom: 30px; opacity: 1;}
-        }
- 
-        @keyframes fadeout {
-            from {bottom: 30px; opacity: 1;}
-            to {bottom: 0; opacity: 0;}
-        }
-    </style>
 </head>
 
 <body>
@@ -176,7 +143,7 @@ $role = $userData['role'];
             <p><a href="home.php">Logo</a></p>
         </div>
         <div class="right-links">
-            <a href="Change_Profile.php">Change Profile</a>
+            <a href="edit.php">Change Profile</a>
             <a href="php/logout.php"><button class="btn">Log Out</button></a>
         </div>
     </div>
@@ -210,7 +177,6 @@ $role = $userData['role'];
 
                 <h1>Welcome, Admin <?php echo htmlspecialchars($username); ?>!</h1>
                 <p>Manage the users of the WAF system below:</p>
-
                 <table>
                     <tr>
                         <th>Username</th>
@@ -246,22 +212,7 @@ $role = $userData['role'];
                 <p>If you believe you need additional permissions, please contact the admin.</p>
             <?php } ?>
         </div>
-</main>
-    <div id="toast" class="toast">User added successfully!</div>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const params = new URLSearchParams(window.location.search);
-            if (params.get("added") === "true") {
-                const toast = document.getElementById("toast");
-                toast.classList.add("show");
-                setTimeout(() => {
-                    toast.classList.remove("show");
-                    // Remove param from URL after shown
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                }, 3500);
-            }
-        });
-    </script>
+    </main>
 </body>
 
 </html>
