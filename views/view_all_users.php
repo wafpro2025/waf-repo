@@ -104,7 +104,7 @@ $query = mysqli_query($con, "SELECT * FROM users");
         }
     </style>
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", function() {
             const loader = document.getElementById("loader");
             const table = document.getElementById("user-table");
             const search = document.getElementById("search");
@@ -115,13 +115,50 @@ $query = mysqli_query($con, "SELECT * FROM users");
                 table.style.display = "table";
             }, 500);
 
-            search.addEventListener("keyup", function () {
-                const filter = search.value.toLowerCase();
-                const rows = table.querySelectorAll("tbody tr");
-                rows.forEach(row => {
-                    const text = row.innerText.toLowerCase();
-                    row.style.display = text.includes(filter) ? "" : "none";
-                });
+            // الاستماع لحدث الكتابة في مربع البحث
+            search.addEventListener("keyup", function() {
+                const filter = search.value.trim().toLowerCase();
+
+                // تجاهل الكلمات القصيرة جدًا (مثل "ah" أو "so")
+                if (filter.length < 3) {
+                    return; // إذا كانت الكلمة أقل من 3 حروف، مش هنعمل شيء
+                }
+
+                if (filter.length === 0) {
+                    const rows = table.querySelectorAll("tbody tr");
+                    rows.forEach(row => row.style.display = "");
+                    return;
+                }
+
+                // إرسال النص للتحقق من الأمان عبر PHP
+                fetch("php/validate_search.php", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            text: filter
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        // إذا كان النص ضارًا، التوجيه إلى صفحة أخرى
+                        if (data.prediction === 1) {
+                            // إعادة التوجيه إلى صفحة الحظر
+                            window.location.href = "blockpage.php";
+                            return;
+                        }
+
+                        // فلترة الجدول بناءً على النص المدخل
+                        const rows = table.querySelectorAll("tbody tr");
+                        rows.forEach(row => {
+                            const text = row.innerText.toLowerCase();
+                            row.style.display = text.includes(filter) ? "" : "none";
+                        });
+                    })
+                    .catch(err => {
+                        console.error("حدث خطأ في التحقق:", err);
+                    });
             });
         });
     </script>
@@ -151,7 +188,10 @@ $query = mysqli_query($con, "SELECT * FROM users");
                 </tr>
             </thead>
             <tbody>
-                <?php while ($row = mysqli_fetch_assoc($query)) { ?>
+                <?php
+
+                while ($row = mysqli_fetch_assoc($query)) {
+                ?>
                     <tr>
                         <td><?php echo htmlspecialchars($row['id']); ?></td>
                         <td><?php echo htmlspecialchars($row['username']); ?></td>

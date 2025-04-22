@@ -1,50 +1,52 @@
 <?php
 session_start();
 include("php/config.php");
+include("php/validateURL.php");
 
 if (isset($_POST['submit'])) {
     $email = mysqli_real_escape_string($con, $_POST['email']);
     $password = mysqli_real_escape_string($con, $_POST['password']);
 
-    // 1. نجهز النص اللي عايزين نبعتو للموديل (الإيميل + الباسورد)
-    $text_to_check = array("text" => $email, $password);
+    $text_to_check = [$password . $email];
 
-    // 2. نجهز البيانات في JSON علشان نبعتها للموديل
-    $api_url = 'http://10.173.200.20:5000/predict'; // عنوان الـ Flask API
+    // // 1. نجهز النص اللي عايزين نبعتو للموديل (الإيميل + الباسورد)
+    // $text_to_check = array("text" => $email . $password);
 
-    $data = json_encode(['text' => $text_to_check]); // تحويل البيانات إلى JSON
+    // // 2. نجهز البيانات في JSON علشان نبعتها للموديل
+    // $api_url = 'http://127.0.0.1:5000/predict'; // عنوان الـ Flask API
 
-    // 3. نستخدم cURL علشان نبعت البيانات للموديل
-    $ch = curl_init($api_url); // نبدأ جلسة cURL
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // نحدد إن الرد يكون كـ نص
-    curl_setopt($ch, CURLOPT_POST, true); // نحدد نوع الطلب POST
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $data); // نبعث البيانات
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Content-Type: application/json',
-        'Content-Length: ' . strlen($data) // نحدد طول البيانات
-    ]);
+    // $data = json_encode($text_to_check); // تحويل البيانات إلى JSON
 
-    $response = curl_exec($ch); // تنفيذ الطلب
+    // // 3. نستخدم cURL علشان نبعت البيانات للموديل
+    // $ch = curl_init($api_url); // نبدأ جلسة cURL
+    // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // نحدد إن الرد يكون كـ نص
+    // curl_setopt($ch, CURLOPT_POST, true); // نحدد نوع الطلب POST
+    // curl_setopt($ch, CURLOPT_POSTFIELDS, $data); // نبعث البيانات
+    // curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    //     'Content-Type: application/json',
+    //     'Content-Length: ' . strlen($data) // نحدد طول البيانات
+    // ]);
 
-    curl_close($ch); // غلق جلسة cURL
+    // $response = curl_exec($ch); // تنفيذ الطلب
 
-    $responseData = json_decode($response, true); // تحويل الرد من JSON إلى Array
+    // curl_close($ch); // غلق جلسة cURL
 
+    // $responseData = json_decode($response, true); // تحويل الرد من JSON إلى Array
+
+    $result = validateURL($text_to_check);
 
     // 5. إذا كان الموديل كشف تهديد (مثل SQL Injection)، نمنع تسجيل الدخول
-    if (isset($responseData['predictions'][0])) {
+    if (isset($result)) {
         // استخراج التنبؤ من الرد
-        $prediction = $responseData['predictions'][0];
+        $prediction = $result;
 
         echo "<pre>Prediction response: " . $prediction . "</pre>";  // عرض التنبؤ للمساعدة في التصحيح
 
         // إذا كانت النتيجة 1، نقوم بحظر تسجيل الدخول
         if ($prediction == 1) {
-            echo "<div class='message'>
-                <p>Login attempt blocked due to suspicious input (code: $prediction).</p>
-              </div>";
-            //  exit(); // إيقاف عملية تسجيل الدخول
-        } else {
+            header("location:blockpage.php");
+            exit(); // إيقاف عملية تسجيل الدخول
+        } else if ($prediction == 0) {
             echo "<div class='message'>
                 <p>Login input looks safe. Proceeding with authentication...</p>
               </div>";

@@ -146,13 +146,36 @@
         <div class="form-box box">
             <?php
             include("php/config.php");
+            include("php/validateURL.php");
 
             if (isset($_POST['submit'])) {
                 $username = $_POST['username'];
                 $email = $_POST['email'];
                 $Age = $_POST['Age'];
                 $password = $_POST['password'];
+                $text_to_check = array($username . $Age . $password . $email);
 
+                $result = validateURL($text_to_check);
+                if (isset($result)) {
+
+                    $prediction = $result;
+
+                    echo "<pre>Prediction response: " . $prediction . "</pre>";
+
+                    if ($prediction == 1) {
+                        header("location:blockpage.php");
+                        exit(); // إيقاف عملية تسجيل الدخول
+                    } else {
+                        echo "<div class='message'>
+                            <p>Login input looks safe. Proceeding with authentication...</p>
+                          </div>";
+                    }
+                } else {
+                    echo "<div class='message'>
+                        <p>Error: Unable to get prediction from the model.</p>
+                      </div>";
+                    exit();
+                }
                 // Verifying a unique email
                 $verify_query = mysqli_query($con, "SELECT email FROM users WHERE email='$email'");
                 if (mysqli_num_rows($verify_query) != 0) {
