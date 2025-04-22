@@ -1,0 +1,23 @@
+# Python
+venv/
+env/
+__pycache__/
+*.pyc
+
+# PHP
+vendor/
+*.log
+
+# Common
+.DS_Store
+node_modules/
+*.zip
+*.tar.gz
+*.bak
+
+# Flask
+instance/
+*.sqlite3
+
+# System files
+Thumbs.db
