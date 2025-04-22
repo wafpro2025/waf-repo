@@ -1,23 +1,29 @@
-# Python
+# Python virtual environments
 venv/
 env/
+ENV/
+waf_api/api/Lib/
+waf_api/api/Include/
+waf_api/api/Scripts/
+waf_api/api/pyvenv.cfg
+
+# Byte-compiled files
 __pycache__/
-*.pyc
+*.py[cod]
 
-# PHP
-vendor/
+# Model files (اختياري لو كبير)
+*.h5
+*.pkl
+*.joblib
+
+# Logs and temp
 *.log
+*.tmp
 
-# Common
+# OS files
 .DS_Store
-node_modules/
-*.zip
-*.tar.gz
-*.bak
-
-# Flask
-instance/
-*.sqlite3
-
-# System files
 Thumbs.db
+
+# IDE
+.idea/
+.vscode/
