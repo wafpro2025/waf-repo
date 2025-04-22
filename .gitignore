@@ -2,6 +2,7 @@
 venv/
 env/
 ENV/
+waf_api/
 waf_api/api/Lib/
 waf_api/api/Include/
 waf_api/api/Scripts/
