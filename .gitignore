@@ -11,10 +11,6 @@ waf_api/api/pyvenv.cfg
 __pycache__/
 *.py[cod]
 
-# Model files (اختياري لو كبير)
-*.h5
-*.pkl
-*.joblib
 
 # Logs and temp
 *.log
