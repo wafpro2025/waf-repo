@@ -101,17 +101,8 @@ if (isset($_POST['upload_pic'])) {
 
         <section class="blogs-container">
             <h2>Security Reports and Importance of WAF</h2>
-            <p>Welcome to our blog section! Here, we share insights and reports on the importance of Web Application
-                Firewalls (WAF) and other security measures.</p>
-            <p>Feel free to explore our latest posts and share your thoughts!</p>
-            <p>We encourage you to leave comments and engage with our content.</p>
-            <p>Use the search bar below to find specific topics or articles.</p>
-            <p>We value your feedback and look forward to hearing from you!</p>
-            <p>Happy reading!</p>
-            <br>
 
-
-            <input type="text" id="searchBar" placeholder="Search blogs..." onkeyup="filterBlogs()" class="search-bar">
+            <input type="text" id="searchBar" placeholder="Search blogs..." onkeyup="searchBlogs()" class="search-bar">
 
             <div id="blogs">
                 <div class="blog">
@@ -129,8 +120,7 @@ if (isset($_POST['upload_pic'])) {
                     <p>With the increasing sophistication of cyber threats, having a WAF is no longer optional.</p>
                     <p>It acts as the first line of defense against many types of attacks targeting application
                         vulnerabilities.</p>
-                    <p>The role of WAFs is critical especially as more businesses shift their operations online,
-                        making
+                    <p>The role of WAFs is critical especially as more businesses shift their operations online, making
                         them prime targets for attackers.</p>
                 </div>
 
@@ -138,27 +128,9 @@ if (isset($_POST['upload_pic'])) {
                     <h3>🛡️ Best Practices for Web Application Security</h3>
                     <p>Besides using a WAF, it's crucial to perform regular security updates, patch known
                         vulnerabilities, conduct security audits, and follow secure coding practices.</p>
-                    <p>Layered security measures provide stronger protection for web applications and help maintain
-                        the
+                    <p>Layered security measures provide stronger protection for web applications and help maintain the
                         trust of users and clients.</p>
                 </div>
-            </div>
-            <!-- Contact -->
-            <div class="blog">
-                <h2>Contact</h2>
-                <p>Let us book your next trip!</p>
-                <i class="fa fa-map-marker" style="width:30px"></i> Chicago, US<br>
-                <i class="fa fa-phone" style="width:30px"></i> Phone: +00 151515<br>
-                <i class="fa fa-envelope" style="width:30px"> </i> Email: mail@mail.com<br>
-                <form action="/action_page.php" target="_blank">
-                    <p><input class="w3-input w3-padding-16 w3-border" type="text" placeholder="Name" required
-                            name="Name"></p>
-                    <p><input class="w3-input w3-padding-16 w3-border" type="text" placeholder="Email" required
-                            name="Email"></p>
-                    <p><input class="w3-input w3-padding-16 w3-border" type="text" placeholder="Message" required
-                            name="Message"></p>
-                    <p><button class="w3-button w3-black w3-padding-large" type="submit">SEND MESSAGE</button></p>
-                </form>
             </div>
         </section>
     </main>
@@ -200,10 +172,6 @@ if (isset($_POST['upload_pic'])) {
             padding: 20px;
             background-color: #f9f9f9;
             border-radius: 8px;
-            color: #333;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-
-
         }
 
         .search-bar {
@@ -264,7 +232,7 @@ if (isset($_POST['upload_pic'])) {
     </style>
 
     <script>
-        function filterBlogs() {
+        function searchBlogs() {
             var input, filter, blogs, blog, h3, p, i, txtValue;
             input = document.getElementById('searchBar');
             filter = input.value.toLowerCase();

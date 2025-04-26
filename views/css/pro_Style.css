@@ -1,136 +1,65 @@
-body {
-    font-family: Arial, sans-serif;
-    background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
-    color: white;
-    text-align: center;
-    margin: 0;
-    padding: 0;
-}
+<?php
+// Assuming this is the content of /Applications/XAMPP/xamppfiles/htdocs/waf_project/views/user_profile.php
+?>
 
-/* ✅ إعادة تعيين القيم الافتراضية */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: Arial, sans-serif;
-}
+<main class="profile-container">
 
-/* ✅ شريط التنقل */
-.navbar {
-    background-color: #333;
-    color: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 30px;
-}
+    <!-- ✅ بطاقة الملف الشخصي -->
+    <section class="profile-card">
+        <header class="profile-header">
+            <h2>Welcome, <?php echo htmlspecialchars($res_Uname); ?></h2>
+        </header>
 
-.navbar .logo a {
-    color: white;
-    font-size: 22px;
-    font-weight: bold;
-    text-decoration: none;
-}
+        <div class="profile-content">
+            <div class="profile-picture">
+                <img src="<?php echo $res_profile_pic; ?>" alt="Profile Picture" class="profile-img">
+                <form action="" method="post" enctype="multipart/form-data">
+                    <input type="file" name="profile_pic" required>
+                    <button type="submit" name="upload_pic" class="btn upload-btn">Upload New Picture</button>
+                </form>
+            </div>
 
-.nav-links a {
-    color: white;
-    text-decoration: none;
-    margin-right: 15px;
-    font-size: 16px;
-}
+            <div class="user-info">
+                <p><strong>Email:</strong> <?php echo htmlspecialchars($res_email); ?></p>
+                <p><strong>Age:</strong> <?php echo htmlspecialchars($res_Age); ?></p>
+            </div>
+        </div>
 
-.nav-links .btn {
-    background-color: red;
-    color: white;
-    padding: 8px 15px;
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
-    font-size: 14px;
-}
+        <div class="profile-actions">
+            <a href="Change_Profile.php"><button class="btn">Edit Profile</button></a>
+            <a href="change_password.php"><button class="btn">Change Password</button></a>
+            <a href="delete_account.php"><button class="btn delete-btn">Delete Account</button></a>
+        </div>
+    </section>
 
-/* ✅ الحاوية الرئيسية */
-.profile-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 90vh;
-    background-color: #f4f4f4;
-    background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+    <!-- ✅ قسم المدونات -->
+    <section class="blogs-container">
+        <h2>Security Reports and Importance of WAF</h2>
 
-}
+        <input type="text" id="searchBar" placeholder="Search blogs..." onkeyup="searchBlogs()" class="search-bar">
 
-/* ✅ بطاقة الملف الشخصي */
-.profile-card {
-    background: rgb(19, 135, 156);
-    padding: 25px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    width: 350px;
-    text-align: center;
-}
+        <div id="blogs">
+            <div class="blog">
+                <h3>🔒 What is a Web Application Firewall (WAF)?</h3>
+                <p>Hello Readers,</p>
+                <p>A Web Application Firewall (WAF) protects web applications by filtering and monitoring HTTP traffic between a web application and the Internet.</p>
+                <p>It helps prevent attacks such as SQL injection, cross-site scripting (XSS), and other vulnerabilities.</p>
+                <p>WAFs are essential for ensuring the security of any online service or website.</p>
+            </div>
 
-/* ✅ ترويسة الملف الشخصي */
-.profile-header h2 {
-    color: #333;
-    margin-bottom: 15px;
-}
+            <div class="blog">
+                <h3>⚡ Why WAFs are Crucial in 2025</h3>
+                <p>With the increasing sophistication of cyber threats, having a WAF is no longer optional.</p>
+                <p>It acts as the first line of defense against many types of attacks targeting application vulnerabilities.</p>
+                <p>The role of WAFs is critical especially as more businesses shift their operations online, making them prime targets for attackers.</p>
+            </div>
 
-/* ✅ الصورة الشخصية */
-.profile-picture {
-    position: relative;
-    margin-bottom: 15px;
-}
+            <div class="blog">
+                <h3>🛡️ Best Practices for Web Application Security</h3>
+                <p>Besides using a WAF, it's crucial to perform regular security updates, patch known vulnerabilities, conduct security audits, and follow secure coding practices.</p>
+                <p>Layered security measures provide stronger protection for web applications and help maintain the trust of users and clients.</p>
+            </div>
+        </div>
+    </section>
 
-.profile-picture img {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid #007bff;
-}
-
-/* ✅ أزرار التحكم */
-.profile-actions {
-    margin-top: 20px;
-}
-
-.profile-actions .btn {
-    display: block;
-    width: 100%;
-    margin: 10px 0;
-    padding: 10px;
-    font-size: 16px;
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: 0.3s;
-}
-
-/* ✅ تحسين الألوان للأزرار */
-.btn {
-    background-color: #360e72;
-    color: white;
-}
-
-.btn:hover {
-    background-color: #0056b3;
-}
-
-/* ✅ زر حذف الحساب */
-.delete-btn {
-    background-color: #093c09;
-}
-
-.delete-btn:hover {
-    background-color: #c91023;
-}
-
-/* ✅ رفع الصورة */
-.upload-btn {
-    background-color: #28a745;
-}
-
-.upload-btn:hover {
-    background-color: #1e7e34;
-}
+</main>
