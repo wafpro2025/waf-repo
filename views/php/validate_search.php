@@ -14,5 +14,8 @@ if (empty($text)) {
 
 // فحص النص باستخدام الموديل
 $prediction = validateURL($text);
-
+if ($prediction === null) {
+    echo json_encode(["error" => "invalid input"]);
+    exit();
+}
 echo json_encode(["prediction" => $prediction]);
