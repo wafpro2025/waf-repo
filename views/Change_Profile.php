@@ -40,7 +40,7 @@ if (isset($_POST['submit'])) {
         log_activity($id, "Updated profile information", $ip_address);
 
         echo "<div class='message'><p>Profile Updated!</p></div><br>";
-        echo "<a href='home.php'><button class='btn'>Go Home</button></a>";//try user_profile.php
+        echo "<a href='user_profile.php'><button class='btn'>Go Home</button></a>";//try user_profile.php
     } else {
         echo "Error: " . mysqli_error($con);
     }
