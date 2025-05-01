@@ -17,90 +17,22 @@ $query = mysqli_query($con, "SELECT * FROM users");
 <head>
     <meta charset="UTF-8">
     <title>All Users</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
-            color: white;
-            margin: 0;
-            padding: 20px;
-        }
-
-        .container {
-            width: 90%;
-            margin: 0 auto;
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: #34495E;
-        }
-
-        th,
-        td {
-            border: 1px solid #2C3E50;
-            padding: 10px;
-            text-align: center;
-        }
-
-        th {
-            background-color: #2C3E50;
-        }
-
-        tr:nth-child(even) {
-            background-color: #3E5773;
-        }
-
-        a {
-            color: #1ABC9C;
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: underline;
+        #user-table tbody tr:hover {
+            background-color: #2c3e50;
+            transition: background-color 0.3s ease;
         }
 
         .btn {
-            background-color: #E74C3C;
-            color: #fff;
-            padding: 8px 12px;
-            border-radius: 5px;
-            border: none;
-            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            transform: scale(1);
         }
 
         .btn:hover {
-            background-color: #C0392B;
-        }
-
-        .actions a {
-            margin: 0 5px;
-        }
-
-        .search-box {
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .search-box input {
-            padding: 8px;
-            width: 40%;
-            border-radius: 5px;
-            border: none;
-            font-size: 16px;
-        }
-
-        #loader {
-            text-align: center;
-            padding: 20px;
-            font-size: 18px;
-            display: none;
+            transform: scale(1.05);
+            opacity: 0.9;
         }
     </style>
     <script>
@@ -127,19 +59,21 @@ $query = mysqli_query($con, "SELECT * FROM users");
     </script>
 </head>
 
-<body>
-    <div class="container">
-        <h1>All Registered Users</h1>
-        <p><a href="home.php" class="btn">Back to Dashboard</a></p>
+<body class="text-white" style="background: linear-gradient(to right, #0f2027, #203a43, #2c5364); min-height: 100vh;">
+    <div class="container mt-5">
+        <h1 class="text-center mb-4 text-white">All Registered Users</h1>
+        <p><a href="home.php" class="btn" style="background-color:#E74C3C; color:#fff; border:none;">Back to
+                Dashboard</a></p>
 
-        <div class="search-box">
-            <input type="text" id="search" placeholder="Search users...">
+        <div class="input-group mb-4">
+            <input type="text" id="search" class="form-control" placeholder="Search users...">
         </div>
 
-        <div id="loader">Loading...</div>
+        <div id="loader" class="text-white text-center mb-3">Loading...</div>
 
-        <table id="user-table" style="display:none;">
-            <thead>
+        <table id="user-table" class="table text-white"
+            style="background-color: #1f2d3a; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.3); display:none;">
+            <thead style="background-color: #2C3E50;" class="text-center">
                 <tr>
                     <th>ID</th>
                     <th>Username</th>
@@ -150,7 +84,7 @@ $query = mysqli_query($con, "SELECT * FROM users");
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="text-center">
                 <?php while ($row = mysqli_fetch_assoc($query)) { ?>
                     <tr>
                         <td><?php echo htmlspecialchars($row['id']); ?></td>
@@ -160,11 +94,14 @@ $query = mysqli_query($con, "SELECT * FROM users");
                         <td><?php echo htmlspecialchars($row['role']); ?></td>
                         <td><?php echo htmlspecialchars($row['status']); ?></td>
                         <td class="actions">
-                            <a href="edit_user.php?id=<?php echo $row['id']; ?>">Edit</a> |
+                            <a href="edit_user.php?id=<?php echo $row['id']; ?>" class="btn"
+                                style="background-color:#F39C12; color:#fff; border:none;">Edit</a>
                             <?php if ($row['status'] === 'active') { ?>
-                                <a href="block_user.php?id=<?php echo $row['id']; ?>" style="color:red;">Block</a>
+                                <a href="block_user.php?id=<?php echo $row['id']; ?>" class="btn"
+                                    style="background-color:#E74C3C; color:#fff; border:none;">Block</a>
                             <?php } else { ?>
-                                <a href="unblock_user.php?id=<?php echo $row['id']; ?>" style="color:lightgreen;">Unblock</a>
+                                <a href="unblock_user.php?id=<?php echo $row['id']; ?>" class="btn"
+                                    style="background-color:#1ABC9C; color:#fff; border:none;">Unblock</a>
                             <?php } ?>
                         </td>
                     </tr>

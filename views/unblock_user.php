@@ -17,6 +17,7 @@ $user_id = intval($_GET['id']);
 $admin_id = $_SESSION['id']; // Admin's user ID from session
 $ip_address = $_SERVER['REMOTE_ADDR']; // Admin's IP address
 
+
 // Unblock the user
 $unblock_query = mysqli_query($con, "UPDATE users SET status='active' WHERE id=$user_id");
 if ($unblock_query) {

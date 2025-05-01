@@ -58,11 +58,9 @@ if (isset($_POST['submit'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit User Page</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-        /* Existing Styles */
-    </style>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('editUserForm');
@@ -119,47 +117,54 @@ if (isset($_POST['submit'])) {
 </head>
 
 <body>
-    <div class="nav">
-        <div class="logo">
-            <p><a href="home.php">Logo</a></p>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success px-4">
+        <a class="navbar-brand" href="home.php">Logo</a>
+        <div class="ml-auto">
+            <a class="nav-link text-white" href="home.php">Back to Home</a>
         </div>
-        <div class="right-links">
-            <a href="home.php">Back to Home</a>
-        </div>
-    </div>
+    </nav>
 
-    <div class="container">
-        <h1 style="color: #1ABC9C; font-size: 35px; margin-top: 10px;">Edit User Controller</h1>
-        <div class="admin-actions" style="margin-bottom: 20px; display: flex; gap: 20px; justify-content: center;">
-            <a href="view_all_users.php" class="btn">View All Users</a>
+    <div class="container mt-5">
+        <h1 class="text-center text-success mb-4">Edit User Controller</h1>
+        <div class="text-center mb-3">
+            <a href="view_all_users.php" class="btn btn-success">View All Users</a>
         </div>
 
-        <form id="editUserForm" class="form-section">
-            <label for="username">Username:</label>
-            <input type="text" name="username" id="username" value="<?php echo htmlspecialchars($user['username']); ?>" required>
+        <form id="editUserForm" class="border rounded p-4 bg-light">
+            <div class="mb-3">
+                <label for="username" class="form-label">Username:</label>
+                <input type="text" class="form-control" name="username" id="username" value="<?php echo htmlspecialchars($user['username']); ?>" required>
+            </div>
 
-            <label for="email">Email:</label>
-            <input type="email" name="email" id="email" value="<?php echo htmlspecialchars($user['email']); ?>" required>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email:</label>
+                <input type="email" class="form-control" name="email" id="email" value="<?php echo htmlspecialchars($user['email']); ?>" required>
+            </div>
 
-            <label for="age">Age:</label>
-            <input type="number" name="age" id="age" value="<?php echo $user['Age']; ?>" required>
+            <div class="mb-3">
+                <label for="age" class="form-label">Age:</label>
+                <input type="number" class="form-control" name="age" id="age" value="<?php echo $user['Age']; ?>" required>
+            </div>
 
-            <label for="role">Role:</label>
-            <select name="role" id="role" required>
-                <option value="user" <?php echo $user['role'] === 'user' ? 'selected' : ''; ?>>User</option>
-                <option value="admin" <?php echo $user['role'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
-                <option value="soc_analyst" <?php echo $user['role'] === 'soc_analyst' ? 'selected' : ''; ?>>SOC Analyst</option>
-            </select>
+            <div class="mb-3">
+                <label for="role" class="form-label">Role:</label>
+                <select class="form-select" name="role" id="role" required>
+                    <option value="user" <?php echo $user['role'] === 'user' ? 'selected' : ''; ?>>User</option>
+                    <option value="admin" <?php echo $user['role'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
+                    <option value="soc_analyst" <?php echo $user['role'] === 'soc_analyst' ? 'selected' : ''; ?>>SOC Analyst</option>
+                </select>
+            </div>
 
-            <label for="password">New Password (leave blank to keep current):</label>
-            <input type="password" name="password" id="password">
+            <div class="mb-3">
+                <label for="password" class="form-label">New Password (leave blank to keep current):</label>
+                <input type="password" class="form-control" name="password" id="password">
+                <small id="password-strength" class="form-text mt-1"></small>
+            </div>
 
-            <small id="password-strength" style="display: block; margin-top: 5px; text-align: left;"></small>
-
-            <button type="submit" class="btn">Update User</button>
+            <button type="submit" class="btn btn-success w-100">Update User</button>
         </form>
 
-        <div id="response-message"></div>
+        <div id="response-message" class="text-center mt-3 fw-bold"></div>
     </div>
 </body>
 

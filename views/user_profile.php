@@ -8,6 +8,24 @@ $result = mysqli_fetch_assoc($query);
 $res_Uname = $result['username'];
 $res_email = $result['email'];
 $res_Age = $result['Age'];
+if (isset($_POST['post_comment'])) {
+    $comment = mysqli_real_escape_string($con, $_POST['comment']);
+    $user_id = $_SESSION['id'];
+    $blog_id = 1; // لو عندك نظام مقالات فعلية خليه ديناميكي
+
+    $insert = mysqli_query($con, "INSERT INTO comments (user_id, blog_id, comment_text) VALUES ($user_id, $blog_id, '$comment')");
+    if (!$insert) {
+        die("MySQL Error: " . mysqli_error($con));
+    }
+    if ($insert) {
+        // ✅ تسجيل في اللوج
+        $ip = $_SERVER['REMOTE_ADDR'];
+        $log = "INSERT INTO logs (user_id, action, ip_address) VALUES ($user_id, 'Posted a comment', '$ip')";
+        mysqli_query($con, $log);
+    } else {
+        echo "<script>Swal.fire('Error!', 'Failed to post comment.', 'error');</script>";
+    }
+}
 $res_profile_pic = !empty($result['profile_pic']) ? htmlspecialchars($result['profile_pic']) : "uploads/default-avatar.png"; // صورة افتراضية
 
 // ✅ التعامل مع رفع صورة الملف الشخصي
@@ -50,56 +68,78 @@ if (isset($_POST['upload_pic'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Profile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap-dark.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="css/pro_Style.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        const toggleTheme = () => {
+            const currentTheme = localStorage.getItem('theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('theme', newTheme);
+            document.body.classList.toggle('dark-theme', newTheme === 'dark');
+        };
+
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        document.body.classList.toggle('dark-theme', currentTheme === 'dark');
+    </script>
 
 </head>
 
 <body>
     <!-- ✅ شريط التنقل -->
-    <nav class="navbar">
-        <div class="logo">
-            <a href="user_profile.php">Logo</a>
-        </div>
-        <div class="nav-links">
-            <a href="Change_Profile.php">Change Profile</a>
-            <a href="php/logout.php"><button class="btn logout-btn">Log Out</button></a>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="user_profile.php">Logo</a>
+            <div class="d-flex align-items-center">
+                <button class="btn btn-secondary me-2" onclick="toggleTheme()">Toggle Theme</button>
+                <a href="Change_Profile.php" class="btn btn-light me-2">Change Profile</a>
+                <a href="php/logout.php" class="btn btn-danger">Log Out</a>
+            </div>
         </div>
     </nav>
 
     <!-- ✅ قسم الملف الشخصي -->
-    <main class="profile-container">
-        <section class="profile-card">
+    <main class="container my-4">
+        <div class="card p-4 shadow-sm border-0">
             <header class="profile-header">
                 <h2>Welcome, <?php echo htmlspecialchars($res_Uname); ?></h2>
             </header>
 
-            <div class="profile-content">
-                <!-- ✅ صورة الملف الشخصي -->
-                <div class="profile-picture">
-                    <img src="<?php echo $res_profile_pic; ?>" alt="Profile Picture" class="profile-img">
-                    <form action="" method="post" enctype="multipart/form-data">
-                        <input type="file" name="profile_pic" required>
-                        <button type="submit" name="upload_pic" class="btn upload-btn">Upload New Picture</button>
-                    </form>
+            <div class="row">
+                <div class="col-md-4 text-center mb-3">
+                    <!-- ✅ صورة الملف الشخصي -->
+                    <div class="profile-picture">
+                        <img src="<?php echo $res_profile_pic; ?>" class="profile-img">
+                        <form action="" method="post" enctype="multipart/form-data" class="mt-2">
+                            <input type="file" name="profile_pic" class="form-control mb-2" required>
+                            <button type="submit" name="upload_pic" class="btn btn-primary w-100">Upload New
+                                Picture</button>
+                        </form>
+                    </div>
                 </div>
 
                 <!-- ✅ معلومات المستخدم -->
-                <div class="user-info">
-                    <p><strong>Email:</strong> <?php echo htmlspecialchars($res_email); ?></p>
-                    <p><strong>Age:</strong> <?php echo htmlspecialchars($res_Age); ?></p>
+                <div class="col-md-8">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Email:</strong> <?php echo htmlspecialchars($res_email); ?>
+                        </li>
+                        <li class="list-group-item"><strong>Age:</strong> <?php echo htmlspecialchars($res_Age); ?></li>
+                    </ul>
                 </div>
             </div>
 
             <!-- ✅ أزرار الإجراءات -->
-            <div class="profile-actions">
-                <a href="Change_Profile.php"><button class="btn">Edit Profile</button></a>
+            <div class="text-end mt-3">
+                <a href="Change_Profile.php" class="btn btn-outline-primary w-100">Edit Profile</a>
             </div>
-        </section>
+        </div>
 
         <!-- ✅ End of User Profile Section -->
 
-        <section class="blogs-container">
+        <section class="container my-5">
             <h2>Security Reports and Importance of WAF</h2>
             <p>Welcome to our blog section! Here, we share insights and reports on the importance of Web Application
                 Firewalls (WAF) and other security measures.</p>
@@ -114,7 +154,14 @@ if (isset($_POST['upload_pic'])) {
             <input type="text" id="searchBar" placeholder="Search blogs..." onkeyup="filterBlogs()" class="search-bar">
 
             <div id="blogs">
-                <div class="blog">
+                <?php
+                $comments = mysqli_query($con, "SELECT users.username, comment_text, created_at FROM comments JOIN users ON comments.user_id = users.id WHERE blog_id = 1 ORDER BY created_at DESC");
+
+                while ($row = mysqli_fetch_assoc($comments)) {
+                    echo "<div class='comment'><strong>{$row['username']}:</strong><p class='comment-text'>{$row['comment_text']}</p></div>";
+                }
+                ?>
+                <div class="card mb-4 p-3 blog shadow-sm border-0">
                     <h3>🔒 What is a Web Application Firewall (WAF)?</h3>
                     <p>Hello Readers,</p>
                     <p>A Web Application Firewall (WAF) protects web applications by filtering and monitoring HTTP
@@ -124,7 +171,7 @@ if (isset($_POST['upload_pic'])) {
                     <p>WAFs are essential for ensuring the security of any online service or website.</p>
                 </div>
 
-                <div class="blog">
+                <div class="card mb-4 p-3 blog">
                     <h3>⚡ Why WAFs are Crucial in 2025</h3>
                     <p>With the increasing sophistication of cyber threats, having a WAF is no longer optional.</p>
                     <p>It acts as the first line of defense against many types of attacks targeting application
@@ -134,36 +181,97 @@ if (isset($_POST['upload_pic'])) {
                         them prime targets for attackers.</p>
                 </div>
 
-                <div class="blog">
+                <div class="card mb-4 p-3 blog">
                     <h3>🛡️ Best Practices for Web Application Security</h3>
                     <p>Besides using a WAF, it's crucial to perform regular security updates, patch known
                         vulnerabilities, conduct security audits, and follow secure coding practices.</p>
-                    <p>Layered security measures provide stronger protection for web applications and help maintain
-                        the
+                    <p>Layered security measures provide stronger protection for web applications and help maintain the
                         trust of users and clients.</p>
+
+                    <div class="comment-section mt-4">
+                        <div class="comment">
+                            <strong>User1:</strong>
+                            <p class="comment-text">Great article! Very informative.</p>
+                        </div>
+                        <form id="commentForm">
+                            <div class="input-group">
+                                <textarea class="form-control" id="commentInput" placeholder="Write your comment..."
+                                    required></textarea>
+                                <button type="submit" class="btn btn-success">Post</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
             <!-- Contact -->
-            <div class="blog">
+            <div class="card mb-4 p-3">
                 <h2>Contact</h2>
-                <p>Let us book your next trip!</p>
-                <i class="fa fa-map-marker" style="width:30px"></i> Chicago, US<br>
+                <p>If you have any questions or feedback, feel free to reach out!</p>
                 <i class="fa fa-phone" style="width:30px"></i> Phone: +00 151515<br>
                 <i class="fa fa-envelope" style="width:30px"> </i> Email: mail@mail.com<br>
-                <form action="/action_page.php" target="_blank">
-                    <p><input class="w3-input w3-padding-16 w3-border" type="text" placeholder="Name" required
-                            name="Name"></p>
-                    <p><input class="w3-input w3-padding-16 w3-border" type="text" placeholder="Email" required
-                            name="Email"></p>
-                    <p><input class="w3-input w3-padding-16 w3-border" type="text" placeholder="Message" required
-                            name="Message"></p>
-                    <p><button class="w3-button w3-black w3-padding-large" type="submit">SEND MESSAGE</button></p>
+                <form class="mt-4">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" placeholder="Name" required name="Name">
+                    </div>
+                    <div class="mb-3">
+                        <input type="text" class="form-control" placeholder="Message" required name="Message">
+                    </div>
+                    <button type="submit" class="btn btn-dark">SEND MESSAGE</button>
                 </form>
             </div>
         </section>
     </main>
 
     <style>
+        .comment-section {
+            margin-top: 1rem;
+        }
+
+        body.dark-theme {
+            background-color: #121212;
+            color: #ffffff;
+        }
+
+        body.dark-theme .navbar {
+            background-color: #222 !important;
+            /* لون داكن مختلف عن الخلفية */
+        }
+
+        body.dark-theme .navbar .navbar-brand {
+            color: #ffffff !important;
+            /* لون النص داخل الـ navbar */
+        }
+
+        body.dark-theme .navbar .btn {
+            background-color: #444 !important;
+            /* لون الأزرار */
+            color: white !important;
+        }
+
+        body.dark-theme .navbar .btn:hover {
+            background-color: #555 !important;
+        }
+
+        body.dark-theme .card {
+            background-color: #333 !important;
+            /* لون البطاقات */
+            color: #fff !important;
+        }
+
+        body.dark-theme .btn {
+            background-color: #555 !important;
+            color: white !important;
+        }
+
+        body.dark-theme .btn:hover {
+            background-color: #444 !important;
+        }
+
+        body.dark-theme .profile-img {
+            border: 3px solid #ffffff !important;
+            /* لون الإطار حول الصورة */
+        }
+
         .profile-picture {
             text-align: center;
             margin-bottom: 15px;
@@ -236,6 +344,53 @@ if (isset($_POST['upload_pic'])) {
             margin-bottom: 15px;
         }
 
+        .comment {
+            background-color: #f8f9fa;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .comment strong {
+            color: #007bff;
+        }
+
+        .comment-text {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        body.dark-theme .comment-text {
+            color: rgb(79, 42, 42) !important;
+            /* تغيير اللون ليكون أكثر وضوحًا في الوضع الداكن */
+        }
+
+        .comment-form {
+            margin-top: 20px;
+        }
+
+        .comment-input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+
+        .comment-btn {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .comment-btn:hover {
+            background-color: #218838;
+        }
+
         .comment-form {
             margin-top: 10px;
             display: flex;
@@ -286,37 +441,47 @@ if (isset($_POST['upload_pic'])) {
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const forms = document.querySelectorAll('.ajax-comment-form');
+            const forms = document.querySelectorAll('.comment-form');
 
             forms.forEach(form => {
                 form.addEventListener('submit', function (e) {
-                    e.preventDefault();
+                    // e.preventDefault();
 
-                    const formData = new FormData(form);
-                    formData.append('submit_comment_ajax', '1');
+                    const commentText = form.querySelector('.comment-input').value;
+                    const commentSection = form.previousElementSibling;
 
-                    fetch('php/handle_comment.php', {
-                        method: 'POST',
-                        body: formData
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                const commentSection = form.previousElementSibling;
-                                const newComment = document.createElement('div');
-                                newComment.classList.add('comment');
-                                newComment.innerHTML = `<strong>${data.username}:</strong> ${data.comment_text}`;
-                                commentSection.appendChild(newComment);
-                                form.reset();
-                            } else {
-                                alert(data.error);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                        });
+                    const newComment = document.createElement('div');
+                    newComment.classList.add('comment');
+                    newComment.innerHTML = `<strong>You:</strong> <p class="comment-text">${commentText}</p>`;
+
+                    commentSection.appendChild(newComment);
+                    form.reset();
                 });
             });
+        });
+    </script>
+    <script>
+        document.getElementById('commentForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const commentText = document.getElementById('commentInput').value.trim();
+            if (!commentText) return;
+
+            fetch('views/save_comment.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'comment=' + encodeURIComponent(commentText)
+            })
+                .then(response => response.text())
+                .then(result => {
+                    if (result === 'success') {
+                        const newComment = document.createElement('div');
+                        newComment.className = 'comment';
+                        newComment.innerHTML = `<strong>You:</strong><p class="comment-text">${commentText}</p>`;
+                        document.getElementById('commentSection').prepend(newComment);
+                        document.getElementById('commentInput').value = '';
+                    }
+                });
         });
     </script>
 
