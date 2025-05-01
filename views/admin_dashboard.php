@@ -42,7 +42,7 @@ $query = mysqli_query($con, "SELECT id, username, email, Age FROM users");
                 <th>Age</th>
                 <th>Actions</th>
             </tr>
-            
+
             <?php while ($row = mysqli_fetch_assoc($query)) { ?>
                 <tr>
                     <td><?php echo htmlspecialchars($row['username']); ?></td>

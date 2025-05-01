@@ -74,13 +74,13 @@
 
         <div class="section">
             <h3>What can I do to resolve this?</h3>
-            <p>You can email the site owner to let them know you were blocked. Please include what you were doing when this page came up and the Cloudflare Ray ID found at the bottom of this page.</p>
+            <p>You can email the site owner to let them know you were blocked. Please include what you were doing when this page came up and you have blocked.</p>
         </div>
 
         <div class="footer">
-            Cloudflare Ray ID: <strong>7e9757f8235b5453</strong> •
+            WAF Shield Ray ID: <strong>7e9757f8235b5453</strong> •
             Your IP: <strong><?php echo $_SERVER['REMOTE_ADDR']; ?></strong> •
-            Performance & security by <a href="" target="_blank">OUR TEAM</a>
+            Performance & security by <a href="https://www.cloudflare.com/" target="_blank">WAF Shield</a>
         </div>
     </div>
 

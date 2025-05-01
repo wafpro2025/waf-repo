@@ -38,9 +38,8 @@ if (isset($_POST['submit'])) {
 
         // Log profile update
         log_activity($id, "Updated profile information", $ip_address);
-
-        echo "<div class='message'><p>Profile Updated!</p></div><br>";
-        echo "<a href='user_profile.php'><button class='btn'>Go Home</button></a>";//try user_profile.php
+        echo "<div class='alert alert-success mt-3'>Profile Updated!</div>";
+        echo "<a href='user_profile.php' class='btn btn-success mt-3'>Go Home</a>";
     } else {
         echo "Error: " . mysqli_error($con);
     }
@@ -54,167 +53,79 @@ if (isset($_POST['submit'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Change Profile</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* Body styling with a smoother background gradient */
         body {
-            font-family: Arial, sans-serif;
             background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
-            color: white;
+            color: #fff;
             text-align: center;
             margin: 0;
             padding: 0;
         }
 
-        /* Container setup with flexbox centering */
-        .container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 0 20px;
-        }
-
-        /* Form box styling with added shadow and rounded corners */
         .form-box {
             background-color: rgba(0, 0, 0, 0.8);
             padding: 40px;
             border-radius: 12px;
-            width: 100%;
-            max-width: 400px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-            text-align: center;
             animation: fadeIn 0.5s ease;
         }
 
-        /* Header style for the form */
-        header {
-            font-size: 28px;
-            font-weight: bold;
-            color: #1abc9c;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-        }
-
-        /* Form field setup */
-        .field {
-            margin-bottom: 20px;
-        }
-
-        .field input {
-            width: 100%;
-            padding: 5px;
-            border-radius: 6px;
-            border: 2px solid #34495e;
-            background-color: #2c3e50;
-            color: #ecf0f1;
-            font-size: 16px;
-        }
-
-        .field input:focus {
-            outline: none;
-            border-color: #1abc9c;
-        }
-
-        /* Button styling for submit and action buttons */
-        .btn {
+        .btn-custom {
             background-color: #2c3e50;
             color: #fff;
-            border: none;
-            padding: 6px 20px;
-            cursor: pointer;
-            border-radius: 6px;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
         }
 
-        .btn:hover {
+        .btn-custom:hover {
             background-color: #16a085;
         }
 
-        /* Styling for error and success messages */
-        .message {
-            margin-top: 20px;
-            font-size: 18px;
-            color: #e74c3c;
-            padding: 10px;
-            border-radius: 6px;
-            background-color: rgba(231, 76, 60, 0.1);
-        }
-
-        .message p {
-            margin: 0;
-        }
-
-        .message a {
-            color: #e74c3c;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        /* Link style for Sign In or Sign Up */
-        .link {
-            margin-top: 20px;
-            font-size: 16px;
-        }
-
-        .link a {
-            color: #1abc9c;
-            text-decoration: none;
-        }
-
-        .link a:hover {
-            text-decoration: underline;
-        }
-
-        /* Animation for smooth fade-in effect */
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
     </style>
 </head>
 
 <body>
-    <div class="nav">
+    <div class="nav d-flex justify-content-between p-3">
         <div class="logo">
-            <p><a href="home.php">Logo</a></p>
+            <p>Logo</p>
         </div>
         <div class="right-links">
-            <a href="php/logout.php"><button class="btn">Log Out</button></a>
+            <a href="php/logout.php"><button class="btn btn-danger">Log Out</button></a>
         </div>
     </div>
 
-    <div class="container">
-        <div class="form-box box">
-            <header>Change Profile</header>
+    <div class="container d-flex justify-content-center align-items-center min-vh-100">
+        <div class="form-box box col-md-6">
+            <h2 class="text-uppercase mb-4 text-success">Change Profile</h2>
             <form action="" method="post">
-                <div class="field input">
-                    <label for="username">Username</label>
-                    <input type="text" name="username" id="username" value="<?php echo htmlspecialchars($res_Uname); ?>"
-                        autocomplete="off" required>
+                <div class="mb-3 text-start">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" name="username" id="username" value="<?php echo htmlspecialchars($res_Uname); ?>" required>
                 </div>
-                <div class="field input">
-                    <label for="email">Email</label>
-                    <input type="email" name="email" id="email" value="<?php echo htmlspecialchars($res_email); ?>"
-                        autocomplete="off" required>
+                <div class="mb-3 text-start">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" name="email" id="email" value="<?php echo htmlspecialchars($res_email); ?>" required>
                 </div>
-                <div class="field input">
-                    <label for="Age">Age</label>
-                    <input type="number" name="Age" id="Age" value="<?php echo htmlspecialchars($res_Age); ?>"
-                        autocomplete="off" required>
+                <div class="mb-3 text-start">
+                    <label for="Age" class="form-label">Age</label>
+                    <input type="number" class="form-control" name="Age" id="Age" value="<?php echo htmlspecialchars($res_Age); ?>" required>
                 </div>
-                <div class="field">
-                    <input type="submit" name="submit" class="btn" value="Update" required>
+                <div class="d-grid">
+                    <input type="submit" name="submit" class="btn btn-custom" value="Update">
                 </div>
             </form>
         </div>
     </div>
 </body>
-
+<script>
+  const alertBox = document.querySelector('.alert');
+  if (alertBox) {
+    setTimeout(() => {
+      alertBox.remove();
+    }, 3000);
+  }
+</script>
 </html>
