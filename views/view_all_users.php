@@ -115,13 +115,13 @@ $query = mysqli_query($con, "SELECT * FROM users");
                 table.style.display = "table";
             }, 500);
 
-            // الاستماع لحدث الكتابة في مربع البحث
+
             search.addEventListener("keyup", function() {
                 const filter = search.value.trim().toLowerCase();
 
-                // تجاهل الكلمات القصيرة جدًا (مثل "ah" أو "so")
+
                 if (filter.length < 3) {
-                    return; // إذا كانت الكلمة أقل من 3 حروف، مش هنعمل شيء
+                    return;
                 }
 
                 if (filter.length === 0) {
@@ -130,7 +130,7 @@ $query = mysqli_query($con, "SELECT * FROM users");
                     return;
                 }
 
-                // إرسال النص للتحقق من الأمان عبر PHP
+
                 fetch("php/validate_search.php", {
                         method: "POST",
                         headers: {
@@ -142,7 +142,7 @@ $query = mysqli_query($con, "SELECT * FROM users");
                     })
                     .then(res => res.json())
                     .then(data => {
-                        // إذا كان النص ضارًا، التوجيه إلى صفحة أخرى
+
                         if (data.prediction === 1) {
                             // إعادة التوجيه إلى صفحة الحظر
                             window.location.href = "blockpage.php";

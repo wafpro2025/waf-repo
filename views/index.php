@@ -40,16 +40,12 @@ if (isset($_POST['submit'])) {
         // استخراج التنبؤ من الرد
         $prediction = $result;
 
-        echo "<pre>Prediction response: " . $prediction . "</pre>";  // عرض التنبؤ للمساعدة في التصحيح
+
 
         // إذا كانت النتيجة 1، نقوم بحظر تسجيل الدخول
         if ($prediction == 1) {
             header("location:blockpage.php");
             exit(); // إيقاف عملية تسجيل الدخول
-        } else if ($prediction == 0) {
-            echo "<div class='message'>
-                <p>Login input looks safe. Proceeding with authentication...</p>
-              </div>";
         }
     } else {
         echo "<div class='message'>
