@@ -1,7 +1,8 @@
 <?php
 session_start();
 include("php/config.php");
-include("php/validateURL.php");
+include("php/smart_security_check.php"); // Include your smart security check function
+// include("php/validateURL.php");
 // Check if the user is an admin 
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     header("Location: home.php");
@@ -32,29 +33,25 @@ if (isset($_POST['submit'])) {
     $role = mysqli_real_escape_string($con, $_POST['role']);
     $password = isset($_POST['password']) ? $_POST['password'] : '';
     $text_to_check = array($username . $age . $role .  $password . $email);
-    $result = validateURL($text_to_check);
+    smartSecurityCheck($text_to_check);
 
-    if (isset($result)) {
-        // استخراج التنبؤ من الرد
-        $prediction = $result;
+    // if (isset($result)) {
+    //     // استخراج التنبؤ من الرد
+    //     $prediction = $result;
 
-        echo "<pre>Prediction response: " . $prediction . "</pre>";  // عرض التنبؤ للمساعدة في التصحيح
+    //     echo "<pre>Prediction response: " . $prediction . "</pre>";  // عرض التنبؤ للمساعدة في التصحيح
 
-        // إذا كانت النتيجة 1، نقوم بحظر تسجيل الدخول
-        if ($prediction == 1) {
-            header("location:blockpage.php");
-            exit(); // إيقاف عملية تسجيل الدخول
-        } else if ($prediction == 0) {
-            echo "<div class='message'>
-                <p>Login input looks safe. Proceeding with authentication...</p>
-              </div>";
-        }
-    } else {
-        echo "<div class='message'>
-            <p>Error: Unable to get prediction from the model.</p>
-          </div>";
-        exit();
-    }
+    //     // إذا كانت النتيجة 1، نقوم بحظر تسجيل الدخول
+    //     if ($prediction == 1) {
+    //         header("location:blockpage.php");
+    //         exit(); // إيقاف عملية تسجيل الدخول
+    //     }
+    // } else {
+    //     echo "<div class='message'>
+    //         <p>Error: Unable to get prediction from the model.</p>
+    //       </div>";
+    //     exit();
+    // }
 
     if (!empty($password)) {
         $hashed_password = hash("sha256", $password);

@@ -1,7 +1,9 @@
 <?php
+
 session_start();
 include("php/config.php"); // Ensure you're including your database connection
-include("php/validateURL.php");
+include("php/smart_security_check.php"); // Include your smart security check function
+// include("php/validateURL.php");
 // Fetch user data from the database when the page is loaded
 if (isset($_SESSION['id'])) {
     $id = $_SESSION['id'];
@@ -25,29 +27,25 @@ if (isset($_POST['submit'])) {
     $Age = $_POST['Age'];
     $id = $_SESSION['id'];
     $text_to_check = array($username . $Age .  $email);
-    $result = validateURL($text_to_check);
+    // smartSecurityCheck($text_to_check);
 
-    if (isset($result)) {
-        // استخراج التنبؤ من الرد
-        $prediction = $result;
+    // if (isset($result)) {
+    //     // استخراج التنبؤ من الرد
+    //     $prediction = $result;
 
-        echo "<pre>Prediction response: " . $prediction . "</pre>";  // عرض التنبؤ للمساعدة في التصحيح
+    //     echo "<pre>Prediction response: " . $prediction . "</pre>";  // عرض التنبؤ للمساعدة في التصحيح
 
-        // إذا كانت النتيجة 1، نقوم بحظر تسجيل الدخول
-        if ($prediction == 1) {
-            header("location:blockpage.php");
-            exit(); // إيقاف عملية تسجيل الدخول
-        } else if ($prediction == 0) {
-            echo "<div class='message'>
-                <p>Login input looks safe. Proceeding with authentication...</p>
-              </div>";
-        }
-    } else {
-        echo "<div class='message'>
-            <p>Error: Unable to get prediction from the model.</p>
-          </div>";
-        exit();
-    }
+    //     // إذا كانت النتيجة 1، نقوم بحظر تسجيل الدخول
+    //     if ($prediction == 1) {
+    //         header("location:blockpage.php");
+    //         exit(); // إيقاف عملية تسجيل الدخول
+    //     }
+    // } else {
+    //     echo "<div class='message'>
+    //         <p>Error: Unable to get prediction from the model.</p>
+    //       </div>";
+    //     exit();
+    // }
     // Update the user profile in the database
     $edit_query = mysqli_query($con, "UPDATE users SET username='$username', email='$email', Age='$Age' WHERE id=$id");
 

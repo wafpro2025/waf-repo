@@ -1,58 +1,39 @@
 <?php
 session_start();
+
 include("php/config.php");
-include("php/validateURL.php");
+// include("php/validateURL.php");
+include("php/smart_security_check.php");
 
 if (isset($_POST['submit'])) {
     $email = mysqli_real_escape_string($con, $_POST['email']);
     $password = mysqli_real_escape_string($con, $_POST['password']);
 
-    $text_to_check = [$password . $email];
+    // $text_to_check = [$password . $email];
+    $input = [$_SERVER['REQUEST_URI'] . $email . $password]; // أو ممكن تاخد POST/GET inputs
+    smartSecurityCheck($input);
+    // smartSecurityCheck($text_to_check);
+    // $result = validateURL($text_to_check);
 
-    // // 1. نجهز النص اللي عايزين نبعتو للموديل (الإيميل + الباسورد)
-    // $text_to_check = array("text" => $email . $password);
-
-    // // 2. نجهز البيانات في JSON علشان نبعتها للموديل
-    // $api_url = 'http://127.0.0.1:5000/predict'; // عنوان الـ Flask API
-
-    // $data = json_encode($text_to_check); // تحويل البيانات إلى JSON
-
-    // // 3. نستخدم cURL علشان نبعت البيانات للموديل
-    // $ch = curl_init($api_url); // نبدأ جلسة cURL
-    // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // نحدد إن الرد يكون كـ نص
-    // curl_setopt($ch, CURLOPT_POST, true); // نحدد نوع الطلب POST
-    // curl_setopt($ch, CURLOPT_POSTFIELDS, $data); // نبعث البيانات
-    // curl_setopt($ch, CURLOPT_HTTPHEADER, [
-    //     'Content-Type: application/json',
-    //     'Content-Length: ' . strlen($data) // نحدد طول البيانات
-    // ]);
-
-    // $response = curl_exec($ch); // تنفيذ الطلب
-
-    // curl_close($ch); // غلق جلسة cURL
-
-    // $responseData = json_decode($response, true); // تحويل الرد من JSON إلى Array
-
-    $result = validateURL($text_to_check);
-
-    // 5. إذا كان الموديل كشف تهديد (مثل SQL Injection)، نمنع تسجيل الدخول
-    if (isset($result)) {
-        // استخراج التنبؤ من الرد
-        $prediction = $result;
+    // // 5. إذا كان الموديل كشف تهديد (مثل SQL Injection)، نمنع تسجيل الدخول
+    // if (isset($result)) {
+    //     // استخراج التنبؤ من الرد
+    //     $prediction = $result;
 
 
 
-        // إذا كانت النتيجة 1، نقوم بحظر تسجيل الدخول
-        if ($prediction == 1) {
-            header("location:blockpage.php");
-            exit(); // إيقاف عملية تسجيل الدخول
-        }
-    } else {
-        echo "<div class='message'>
-            <p>Error: Unable to get prediction from the model.</p>
-          </div>";
-        exit();
-    }
+    //     // إذا كانت النتيجة 1، نقوم بحظر تسجيل الدخول
+    //     if ($prediction == 1) {
+    //         header("location:blockpage.php");
+    //         exit(); // إيقاف عملية تسجيل الدخول
+    //     }
+    // } else {
+    //     echo "<div class='message'>
+    //         <p>Error: Unable to get prediction from the model.</p>
+    //       </div>";
+    //     exit();
+    // }
+
     // 6. لو البيانات سليمة، نكمل البحث عن المستخدم في قاعدة البيانات
     $query = "SELECT * FROM users WHERE email='$email' AND password='$password'";
     $result = mysqli_query($con, $query) or die("Query error: " . mysqli_error($con));
