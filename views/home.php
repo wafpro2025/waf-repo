@@ -26,7 +26,9 @@ $role = $userData['role'];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
-    <link rel="stylesheet" href="">
+
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         /* Basic styling for the entire body */
         body {
@@ -133,8 +135,8 @@ $role = $userData['role'];
         .admin-actions a:hover {
             text-decoration: underline;
         }
-    </style>
-    <style>
+
+        /* Toast notification styles */
         .toast {
             visibility: hidden;
             min-width: 250px;
@@ -150,68 +152,64 @@ $role = $userData['role'];
             bottom: 30px;
             font-size: 17px;
         }
- 
+
         .toast.show {
             visibility: visible;
             -webkit-animation: fadein 0.5s, fadeout 0.5s 3s;
             animation: fadein 0.5s, fadeout 0.5s 3s;
         }
- 
+
         @keyframes fadein {
-            from {bottom: 0; opacity: 0;}
-            to {bottom: 30px; opacity: 1;}
+            from {
+                bottom: 0;
+                opacity: 0;
+            }
+
+            to {
+                bottom: 30px;
+                opacity: 1;
+            }
         }
- 
+
         @keyframes fadeout {
-            from {bottom: 30px; opacity: 1;}
-            to {bottom: 0; opacity: 0;}
+            from {
+                bottom: 30px;
+                opacity: 1;
+            }
+
+            to {
+                bottom: 0;
+                opacity: 0;
+            }
         }
     </style>
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 
 <body>
     <!-- Navigation bar section -->
-    <div class="nav">
-        <div class="logo">
-            <p><a href="home.php">Logo</a></p>
-        </div>
-        <div class="right-links">
-            <a href="Change_Profile.php">Change Profile</a>
-            <a href="php/logout.php"><button class="btn">Log Out</button></a>
-        </div>
-    </div>
 
-    <main>
-        <div class="container">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4">
+        <a class="navbar-brand" href="home.php">Logo</a>
+        <div class="ms-auto">
+            <a href="admin_add_blog.php" class="btn btn-primary">➕ Add New Blog</a>
+
+            <a class="btn btn-outline-light me-2" href="Change_Profile2.php">Change Profile</a>
+            <a class="btn btn-danger" href="php/logout.php">Log Out</a>
+        </div>
+    </nav>
+
+    
+        <div class="container py-5">
+
             <?php if ($role === 'admin') { ?>
                 <!-- Section for admin-specific features -->
-
-
-                <h2>System Logs</h2>
-                <table>
-                    <tr>
-                        <th>User ID</th>
-                        <th>Activity</th>
-                        <th>IP Address</th>
-                        <th>Time</th>
-                    </tr>
-                    <?php
-                    $logs_query = mysqli_query($con, "SELECT logs.*, users.username FROM logs JOIN users ON logs.user_id = users.id ORDER BY log_time DESC");
-                    while ($log = mysqli_fetch_assoc($logs_query)) {
-                        echo "<tr>";
-                        echo "<td>" . htmlspecialchars($log['username']) . "</td>";
-                        echo "<td>" . htmlspecialchars($log['activity']) . "</td>";
-                        echo "<td>" . htmlspecialchars($log['ip_address']) . "</td>";
-                        echo "<td>" . $log['log_time'] . "</td>";
-                        echo "</tr>";
-                    }
-                    ?>
-                </table>
 
                 <h1>Welcome, Admin <?php echo htmlspecialchars($username); ?>!</h1>
                 <p>Manage the users of the WAF system below:</p>
 
-                <table>
+                <table class="table table-dark table-hover table-bordered">
                     <tr>
                         <th>Username</th>
                         <th>Email</th>
@@ -234,34 +232,88 @@ $role = $userData['role'];
                     }
                     ?>
                 </table>
-            <?php } else { ?>
-                <!-- Section for regular user profile -->
-                <h1>Welcome, <?php echo htmlspecialchars($username); ?>!</h1>
-                <p>Here is your profile information:</p>
-                <ul>
-                    <li><strong>Name:</strong> <?php echo htmlspecialchars($username); ?></li>
-                    <li><strong>Email:</strong> <?php echo htmlspecialchars($email); ?></li>
-                    <li><strong>Age:</strong> <?php echo htmlspecialchars($age); ?></li>
-                </ul>
-                <p>If you believe you need additional permissions, please contact the admin.</p>
-            <?php } ?>
-        </div>
-</main>
-    <div id="toast" class="toast">User added successfully!</div>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const params = new URLSearchParams(window.location.search);
-            if (params.get("added") === "true") {
-                const toast = document.getElementById("toast");
-                toast.classList.add("show");
-                setTimeout(() => {
-                    toast.classList.remove("show");
-                    // Remove param from URL after shown
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                }, 3500);
-            }
-        });
-    </script>
+
+
+
+            </div>
+            <br>
+            <br>
+            <h2>System Logs</h2>
+            <table class="table table-dark table-hover table-bordered">
+                <tr>
+                    <th>User ID</th>
+                    <th>Activity</th>
+                    <th>IP Address</th>
+                    <th>Time</th>
+                </tr>
+                <?php
+                $logs_query = mysqli_query($con, "SELECT logs.*, users.username FROM logs JOIN users ON logs.user_id = users.id ORDER BY log_time DESC");
+                while ($log = mysqli_fetch_assoc($logs_query)) {
+                    echo "<tr>";
+                    echo "<td>" . htmlspecialchars($log['username']) . "</td>";
+                    echo "<td>" . htmlspecialchars($log['activity']) . "</td>";
+                    echo "<td>" . htmlspecialchars($log['ip_address']) . "</td>";
+                    echo "<td>" . $log['log_time'] . "</td>";
+                    echo "</tr>";
+                }
+                ?>
+            </table>
+
+        <?php } else { ?>
+            <!-- Section for regular user profile -->
+            <h1>Welcome, <?php echo htmlspecialchars($username); ?>!</h1>
+            <p>Here is your profile information:</p>
+            <ul>
+                <li><strong>Name:</strong> <?php echo htmlspecialchars($username); ?></li>
+                <li><strong>Email:</strong> <?php echo htmlspecialchars($email); ?></li>
+                <li><strong>Age:</strong> <?php echo htmlspecialchars($age); ?></li>
+            </ul>
+            <p>If you believe you need additional permissions, please contact the admin.</p>
+        <?php }
+
+            ?>
+        </main>
+
+        <!-- Toasted Group -->
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const params = new URLSearchParams(window.location.search);
+                // التحقق إذا كان تم إضافة مقال بنجاح
+                if (params.get("added") === "true") {
+                    // إظهار الرسالة
+                    const toastElement = document.getElementById("liveToast");
+                    const bsToast = new bootstrap.Toast(toastElement);
+                    bsToast.show();
+
+                    // إزالة المعلمة من الـ URL بعد عرض التوست
+                    setTimeout(() => {
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }, 4000);
+                }
+            });
+        </script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const params = new URLSearchParams(window.location.search);
+                // التحقق إذا كان تم إضافة مقال بنجاح
+                if (params.get("added") === "true") {
+                    // إظهار الرسالة
+                    const toast = document.getElementById("toast");
+                    toast.classList.add("show");
+
+                    // إزالة الرسالة بعد 3.5 ثواني
+                    setTimeout(() => {
+                        toast.classList.remove("show");
+                        // إزالة المعلمة من الـ URL بعد إظهار الرسالة
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }, 3500); // 3500 ملي ثانية = 3.5 ثانية
+                }
+            });
+        </script>
+
+        <!-- Bootstrap JS (اختياري لو هتستخدم توست أو مودال أو كومبوننت تفاعلي) -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

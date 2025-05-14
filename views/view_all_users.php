@@ -47,13 +47,15 @@ $query = mysqli_query($con, "SELECT * FROM users");
                 table.style.display = "table";
             }, 500);
 
-            search.addEventListener("keyup", function () {
-                const filter = search.value.toLowerCase();
-                const rows = table.querySelectorAll("tbody tr");
-                rows.forEach(row => {
-                    const text = row.innerText.toLowerCase();
-                    row.style.display = text.includes(filter) ? "" : "none";
-                });
+            search.addEventListener("keydown", function (e) {
+                if (e.key === "Enter") {
+                    const filter = search.value.toLowerCase();
+                    const rows = table.querySelectorAll("tbody tr");
+                    rows.forEach(row => {
+                        const text = row.innerText.toLowerCase();
+                        row.style.display = text.includes(filter) ? "" : "none";
+                    });
+                }
             });
         });
     </script>

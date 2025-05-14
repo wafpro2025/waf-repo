@@ -2,6 +2,10 @@
 session_start();
 include("php/config.php");
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    ob_start(); // لمنع أي طباعة غير مقصودة
+}
+
 // Check if the user is an admin 
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     header("Location: home.php");
@@ -25,7 +29,7 @@ if (!$user) {
 }
 
 // Handle form submission 
-if (isset($_POST['submit'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = mysqli_real_escape_string($con, $_POST['username']);
     $email = mysqli_real_escape_string($con, $_POST['email']);
     $age = intval($_POST['age']);
@@ -40,14 +44,24 @@ if (isset($_POST['submit'])) {
     }
 
     if ($update_query) {
-        // Log the action 
         $admin_id = $_SESSION['id'];
         $ip_address = $_SERVER['REMOTE_ADDR'];
         log_activity($admin_id, "Updated user ID $user_id profile", $ip_address);
+
+        header('Content-Type: application/json');
         echo json_encode(['success' => true, 'message' => 'User updated successfully!']);
+        exit();
     } else {
-        echo json_encode(['success' => false, 'message' => 'Failed to update user. Please try again.']);
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'message' => 'Failed to update user.']);
+        exit();
     }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    header('Content-Type: application/json');
+    echo json_encode(["success" => true, "message" => "Test JSON OK ✅"]);
+    exit();
 }
 ?>
 
@@ -59,6 +73,7 @@ if (isset($_POST['submit'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit User Page</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
@@ -88,9 +103,11 @@ if (isset($_POST['submit'])) {
 
                 const formData = new FormData(form);
                 const request = new XMLHttpRequest();
-                request.open("POST", "edit_user.php?id=<?php echo $user_id; ?>", true);
+                request.open("POST", window.location.href, true);
 
                 request.onload = function () {
+                    console.log("Raw response from server:", request.responseText); // ✅ هنا مكانه الصح
+
                     const responseMessage = document.getElementById('response-message');
                     if (request.status === 200) {
                         const response = JSON.parse(request.responseText);
@@ -110,6 +127,14 @@ if (isset($_POST['submit'])) {
                     }
                 };
 
+                request.onerror = function () {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Request Failed',
+                        text: 'Could not connect to the server.'
+                    });
+                };
+
                 request.send(formData);
             });
         });
@@ -117,12 +142,23 @@ if (isset($_POST['submit'])) {
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-success px-4">
-        <a class="navbar-brand" href="home.php">Logo</a>
-        <div class="ml-auto">
-            <a class="nav-link text-white" href="home.php">Back to Home</a>
+    <div class="nav d-flex justify-content-between  navbar-dark bg-success p-4">
+        <div class="logo">
+            <a class="navbar-brand" href="home.php" title="go to your profile">Logo</a>
         </div>
-    </nav>
+        <div class="right-links">
+            <a href="home.php">
+                <button class="btn btn-danger" title="go back">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+            </a>
+            <a href="php/logout.php">
+                <button class="btn btn-danger" title="Good-Bye for a second session">Log Out</button>
+            </a>
+        </div>
+    </div>
+
+
 
     <div class="container mt-5">
         <h1 class="text-center text-success mb-4">Edit User Controller</h1>
@@ -133,17 +169,20 @@ if (isset($_POST['submit'])) {
         <form id="editUserForm" class="border rounded p-4 bg-light">
             <div class="mb-3">
                 <label for="username" class="form-label">Username:</label>
-                <input type="text" class="form-control" name="username" id="username" value="<?php echo htmlspecialchars($user['username']); ?>" required>
+                <input type="text" class="form-control" name="username" id="username"
+                    value="<?php echo htmlspecialchars($user['username']); ?>" required>
             </div>
 
             <div class="mb-3">
                 <label for="email" class="form-label">Email:</label>
-                <input type="email" class="form-control" name="email" id="email" value="<?php echo htmlspecialchars($user['email']); ?>" required>
+                <input type="email" class="form-control" name="email" id="email"
+                    value="<?php echo htmlspecialchars($user['email']); ?>" required>
             </div>
 
             <div class="mb-3">
                 <label for="age" class="form-label">Age:</label>
-                <input type="number" class="form-control" name="age" id="age" value="<?php echo $user['Age']; ?>" required>
+                <input type="number" class="form-control" name="age" id="age" value="<?php echo $user['Age']; ?>"
+                    required>
             </div>
 
             <div class="mb-3">
@@ -151,7 +190,8 @@ if (isset($_POST['submit'])) {
                 <select class="form-select" name="role" id="role" required>
                     <option value="user" <?php echo $user['role'] === 'user' ? 'selected' : ''; ?>>User</option>
                     <option value="admin" <?php echo $user['role'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
-                    <option value="soc_analyst" <?php echo $user['role'] === 'soc_analyst' ? 'selected' : ''; ?>>SOC Analyst</option>
+                    <option value="soc_analyst" <?php echo $user['role'] === 'soc_analyst' ? 'selected' : ''; ?>>SOC
+                        Analyst</option>
                 </select>
             </div>
 

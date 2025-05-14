@@ -34,6 +34,6 @@ if ($unblock_query) {
 }
 
 // Redirect back to admin dashboard
-header("Location: home.php");
+header("Location: view_all_users.php");
 exit();
 ?>

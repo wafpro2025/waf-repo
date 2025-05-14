@@ -1,65 +1,58 @@
 <?php
-session_start();
-include("php/config.php");
-
+session_start();  // بدء الجلسة لتمكين الوصول إلى البيانات المخزنة في الجلسة
+include("php/config.php");  // تضمين ملف الاتصال بقاعدة البيانات
+// التحقق مما إذا كان المستخدم قد قام بتسجيل الدخول
+if (!isset($_SESSION['id'])) {  // إذا لم يكن معرف المستخدم موجودًا في الجلسة
+    header("Location: index.php");  // إعادة توجيه المستخدم إلى صفحة تسجيل الدخول
+    exit();  // إنهاء تنفيذ السكربت
+}
+// التحقق من حالة المستخدم
+// استعلام لجلب حالة المستخدم من قاعدة البيانات
 $id = $_SESSION['id'];
-$query = mysqli_query($con, "SELECT * FROM users WHERE id=$id");
-$result = mysqli_fetch_assoc($query);
-$res_Uname = $result['username'];
-$res_email = $result['email'];
-$res_Age = $result['Age'];
-if (isset($_POST['post_comment'])) {
-    $comment = mysqli_real_escape_string($con, $_POST['comment']);
-    $user_id = $_SESSION['id'];
-    $blog_id = 1; // لو عندك نظام مقالات فعلية خليه ديناميكي
+$query = mysqli_query($con, "SELECT status FROM users WHERE id = $id");
+$row = mysqli_fetch_assoc($query);
 
-    $insert = mysqli_query($con, "INSERT INTO comments (user_id, blog_id, comment_text) VALUES ($user_id, $blog_id, '$comment')");
-    if (!$insert) {
-        die("MySQL Error: " . mysqli_error($con));
-    }
+if ($row['status'] !== 'active') {
+    // المستخدم محظور
+    session_destroy(); // انهي الجلسة
+    header("Location: index.php?blocked=true");
+    exit();
+}
+
+if (isset($_POST['post_comment'])) {
+    $comment_text = mysqli_real_escape_string($con, $_POST['comment_text']);
+    $blog_id = intval($_POST['blog_id']);
+    $user_id = $_SESSION['id'];
+
+    $insert = mysqli_query($con, "INSERT INTO comments (user_id, blog_id, comment_text) VALUES ($user_id, $blog_id, '$comment_text')");
+
     if ($insert) {
-        // ✅ تسجيل في اللوج
         $ip = $_SERVER['REMOTE_ADDR'];
-        $log = "INSERT INTO logs (user_id, action, ip_address) VALUES ($user_id, 'Posted a comment', '$ip')";
-        mysqli_query($con, $log);
+        mysqli_query($con, "INSERT INTO logs (user_id, activity, ip_address) VALUES ($user_id, 'Posted a comment', '$ip')");
+
+        // ✅ إعادة توجيه لمنع التكرار
+        header("Location: user_profile.php");
+        exit();
     } else {
-        echo "<script>Swal.fire('Error!', 'Failed to post comment.', 'error');</script>";
+        echo "<script>alert('Failed to post comment');</script>";
     }
 }
-$res_profile_pic = !empty($result['profile_pic']) ? htmlspecialchars($result['profile_pic']) : "uploads/default-avatar.png"; // صورة افتراضية
+$id = $_SESSION['id'];  // الحصول على معرف المستخدم من الجلسة
+$query = mysqli_query($con, "SELECT * FROM users WHERE id=$id");  // استعلام لجلب بيانات المستخدم من قاعدة البيانات باستخدام معرّف المستخدم
+$result = mysqli_fetch_assoc($query);  // تحويل النتيجة إلى مصفوفة
+$res_Uname = $result['username'];  // تخزين اسم المستخدم في متغير
+$res_email = $result['email'];  // تخزين البريد الإلكتروني في متغير
+$res_Age = $result['Age'];  // تخزين العمر في متغير
 
-// ✅ التعامل مع رفع صورة الملف الشخصي
-if (isset($_POST['upload_pic'])) {
-    $target_dir = "";
-    $target_file = $target_dir . basename($_FILES["profile_pic"]["name"]);
-    $uploadOk = 1;
-    $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
-
-    // ✅ التحقق من أن الملف صورة
-    $check = getimagesize($_FILES["profile_pic"]["tmp_name"]);
-    if ($check !== false) {
-        $uploadOk = 1;
-    } else {
-        echo "<script>Swal.fire('message error!', 'File is not an image.', 'error');</script>";
-        $uploadOk = 0;
-    }
-
-    // ✅ السماح فقط بـ JPG و JPEG و PNG
-    if (!in_array($imageFileType, ['jpg', 'jpeg', 'png'])) {
-        echo "<script>Swal.fire('Only JPG, JPEG, and PNG files are allowed.', 'error');</script>";
-        $uploadOk = 0;
-    }
-
-    // ✅ نقل الملف المرفوع وتحديث قاعدة البيانات
-    if ($uploadOk && move_uploaded_file($_FILES["profile_pic"]["tmp_name"], $target_file)) {
-        mysqli_query($con, "UPDATE users SET profile_pic='$target_file' WHERE id=$id");
-        $_SESSION['profile_pic'] = $target_file;
-        echo "<script>Swal.fire( 'Profile picture updated successfully!'.', 'success').then(() => location.reload());</script>";
-    } else {
-        echo "<script>Swal.fire('There was an error uploading your file.', 'error');</script>";
-    }
+$searchTerm = '';
+if (isset($_POST['search'])) {
+    $searchTerm = mysqli_real_escape_string($con, $_POST['search']);
+    $blog_query = mysqli_query($con, "SELECT * FROM blogs WHERE title LIKE '%$searchTerm%' OR content LIKE '%$searchTerm%' ORDER BY created_at DESC");
+} else {
+    $blog_query = mysqli_query($con, "SELECT * FROM blogs ORDER BY created_at DESC");
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -70,21 +63,11 @@ if (isset($_POST['upload_pic'])) {
     <title>User Profile</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap-dark.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/pro_Style.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <script>
-        const toggleTheme = () => {
-            const currentTheme = localStorage.getItem('theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            localStorage.setItem('theme', newTheme);
-            document.body.classList.toggle('dark-theme', newTheme === 'dark');
-        };
-
-        const currentTheme = localStorage.getItem('theme') || 'light';
-        document.body.classList.toggle('dark-theme', currentTheme === 'dark');
-    </script>
 
 </head>
 
@@ -92,11 +75,15 @@ if (isset($_POST['upload_pic'])) {
     <!-- ✅ شريط التنقل -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
-            <a class="navbar-brand" href="user_profile.php">Logo</a>
+            <a class="navbar-brand" href="user_profile.php" title="go to main profile">Logo</a>
             <div class="d-flex align-items-center">
-                <button class="btn btn-secondary me-2" onclick="toggleTheme()">Toggle Theme</button>
-                <a href="Change_Profile.php" class="btn btn-light me-2">Change Profile</a>
-                <a href="php/logout.php" class="btn btn-danger">Log Out</a>
+                <a href="Change_Profile.php" class="btn btn-danger me-2"
+                    title="go to edit your name, age and email if you want">Edit Profile</a>
+                <!-- ✅ الزر الجديد لتغيير صورة البروفايل -->
+                <a href="upload_profile_pic.php"><button class="btn btn-danger me-2"
+                        title="go to change profile pic ">Change
+                        Picture</button></a>
+                <a href="php/logout.php" class="btn btn-danger" title="Good-Bye for a second session">Log Out</a>
             </div>
         </div>
     </nav>
@@ -112,12 +99,8 @@ if (isset($_POST['upload_pic'])) {
                 <div class="col-md-4 text-center mb-3">
                     <!-- ✅ صورة الملف الشخصي -->
                     <div class="profile-picture">
-                        <img src="<?php echo $res_profile_pic; ?>" class="profile-img">
-                        <form action="" method="post" enctype="multipart/form-data" class="mt-2">
-                            <input type="file" name="profile_pic" class="form-control mb-2" required>
-                            <button type="submit" name="upload_pic" class="btn btn-primary w-100">Upload New
-                                Picture</button>
-                        </form>
+                        <img src="<?php echo $result['profile_pic'] ? $result['profile_pic'] : 'uploads/default.jpg'; ?>"
+                            width="150" height="150" style="border-radius: 50%; object-fit: cover; " />
                     </div>
                 </div>
 
@@ -132,9 +115,14 @@ if (isset($_POST['upload_pic'])) {
             </div>
 
             <!-- ✅ أزرار الإجراءات -->
-            <div class="text-end mt-3">
-                <a href="Change_Profile.php" class="btn btn-outline-primary w-100">Edit Profile</a>
-            </div>
+            <!-- <div class="text-end mt-3">
+                <a href="Change_Profile.php" class="btn btn-outline-primary w-100"
+                    title="go to edit your name, age and email if you want">Edit Profile</a>
+                //✅ الزر الجديد لتغيير صورة البروفايل 
+                <a href="upload_profile_pic.php"><button class="btn btn-outline-primary w-100"
+                        title="go to change profile pic ">Change
+                        Picture</button></a>
+            </div>  -->
         </div>
 
         <!-- ✅ End of User Profile Section -->
@@ -151,74 +139,80 @@ if (isset($_POST['upload_pic'])) {
             <br>
 
 
-            <input type="text" id="searchBar" placeholder="Search blogs..." onkeyup="filterBlogs()" class="search-bar">
+            <div id="blogResults">
+                <form method="GET" action="user_profile.php" class="input-group">
+                    <input type="text" name="search" class="form-control" placeholder="Search blog titles or content..."
+                        value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
+                    <button class="btn btn-outline-primary" type="submit"
+                        title="search about any thing inside the blogs content"><i
+                            class="bi bi-search"></i>Search</button>
+                </form>
 
-            <div id="blogs">
                 <?php
-                $comments = mysqli_query($con, "SELECT users.username, comment_text, created_at FROM comments JOIN users ON comments.user_id = users.id WHERE blog_id = 1 ORDER BY created_at DESC");
 
-                while ($row = mysqli_fetch_assoc($comments)) {
-                    echo "<div class='comment'><strong>{$row['username']}:</strong><p class='comment-text'>{$row['comment_text']}</p></div>";
+                if (isset($_GET['search']) && !empty(trim($_GET['search']))) {
+                    $search = mysqli_real_escape_string($con, $_GET['search']);
+                    $blog_query = mysqli_query($con, "SELECT * FROM blogs WHERE title LIKE '%$search%' OR content LIKE '%$search%' ORDER BY created_at DESC");
+                } else {
+                    $blog_query = mysqli_query($con, "SELECT * FROM blogs ORDER BY created_at DESC");
+                }
+                if (mysqli_num_rows($blog_query) > 0) {
+                    while ($blog = mysqli_fetch_assoc($blog_query)) {
+                        echo '<div class="card mb-4 p-3 blog shadow-sm border-0">';
+                        echo '<h3>' . htmlspecialchars($blog['title']) . '</h3>';
+                        echo '<p>' . nl2br(htmlspecialchars($blog['content'])) . '</p>';
+                        echo '<small class="text-muted">🕒 Posted on: ' . $blog['created_at'] . '</small>';
+                        // 👇 هتحط الكود الجديد هنا 👇
+                
+                        $blog_id = $blog['id'];
+
+                        // عرض التعليقات
+                        $comment_query = mysqli_query($con, "SELECT comments.*, users.username FROM comments JOIN users ON comments.user_id = users.id WHERE blog_id = $blog_id ORDER BY created_at DESC");
+
+                        echo '<div class="comment-section mt-4">';
+                        echo '<h5 class="mb-3">Comments:</h5>';
+
+                        // Comments list
+                        echo '<ul class="list-group mb-3">';
+                        while ($comment = mysqli_fetch_assoc($comment_query)) {
+                            echo '<li class="list-group-item d-flex justify-content-between align-items-start">';
+                            echo '<div>';
+                            echo '<strong>' . htmlspecialchars($comment['username']) . ':</strong> ';
+                            echo '<span>' . htmlspecialchars($comment['comment_text']) . '</span>';
+                            echo '<br><small class="text-muted">' . $comment['created_at'] . '</small>';
+                            echo '</div>';
+
+                            // ✅ إظهار زر الحذف لو المستخدم هو صاحب التعليق أو أدمن
+                            if ($comment['user_id'] == $_SESSION['id'] || $_SESSION['role'] === 'admin') {
+                                echo '<form action="delete_comment.php" method="POST" onsubmit="return confirm(\'Are you sure you want to delete this comment?\');">';
+                                echo '<input type="hidden" name="comment_id" value="' . $comment['id'] . '">';
+                                echo '<button type="submit" class="btn btn-sm btn-danger ms-3">Delete</button>';
+                                echo '</form>';
+                            }
+
+                            echo '</li>';
+                        }
+                        echo '</ul>';
+
+                        // نموذج كتابة تعليق
+                        echo '<form method="POST" class="comment-form mb-5">';
+                        echo '  <input type="hidden" name="blog_id" value="' . $blog_id . '">';
+                        echo '  <div class="input-group">';
+                        echo '    <input type="text" name="comment_text" class="form-control" placeholder="Write a comment..." required>';
+                        echo '    <button type="submit" name="post_comment" class="btn btn-primary" title="you can post your comment for all users with your name">Post</button>';
+                        echo '  </div>';
+                        echo '</form>';
+                        echo '</div>';
+
+                        echo '</div>';
+                    }
+                } else {
+                    echo "<p>No blogs available yet.</p>";
                 }
                 ?>
-                <div class="card mb-4 p-3 blog shadow-sm border-0">
-                    <h3>🔒 What is a Web Application Firewall (WAF)?</h3>
-                    <p>Hello Readers,</p>
-                    <p>A Web Application Firewall (WAF) protects web applications by filtering and monitoring HTTP
-                        traffic between a web application and the Internet.</p>
-                    <p>It helps prevent attacks such as SQL injection, cross-site scripting (XSS), and other
-                        vulnerabilities.</p>
-                    <p>WAFs are essential for ensuring the security of any online service or website.</p>
-                </div>
 
-                <div class="card mb-4 p-3 blog">
-                    <h3>⚡ Why WAFs are Crucial in 2025</h3>
-                    <p>With the increasing sophistication of cyber threats, having a WAF is no longer optional.</p>
-                    <p>It acts as the first line of defense against many types of attacks targeting application
-                        vulnerabilities.</p>
-                    <p>The role of WAFs is critical especially as more businesses shift their operations online,
-                        making
-                        them prime targets for attackers.</p>
-                </div>
-
-                <div class="card mb-4 p-3 blog">
-                    <h3>🛡️ Best Practices for Web Application Security</h3>
-                    <p>Besides using a WAF, it's crucial to perform regular security updates, patch known
-                        vulnerabilities, conduct security audits, and follow secure coding practices.</p>
-                    <p>Layered security measures provide stronger protection for web applications and help maintain the
-                        trust of users and clients.</p>
-
-                    <div class="comment-section mt-4">
-                        <div class="comment">
-                            <strong>User1:</strong>
-                            <p class="comment-text">Great article! Very informative.</p>
-                        </div>
-                        <form id="commentForm">
-                            <div class="input-group">
-                                <textarea class="form-control" id="commentInput" placeholder="Write your comment..."
-                                    required></textarea>
-                                <button type="submit" class="btn btn-success">Post</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
             </div>
-            <!-- Contact -->
-            <div class="card mb-4 p-3">
-                <h2>Contact</h2>
-                <p>If you have any questions or feedback, feel free to reach out!</p>
-                <i class="fa fa-phone" style="width:30px"></i> Phone: +00 151515<br>
-                <i class="fa fa-envelope" style="width:30px"> </i> Email: mail@mail.com<br>
-                <form class="mt-4">
-                    <div class="mb-3">
-                        <input type="text" class="form-control" placeholder="Name" required name="Name">
-                    </div>
-                    <div class="mb-3">
-                        <input type="text" class="form-control" placeholder="Message" required name="Message">
-                    </div>
-                    <button type="submit" class="btn btn-dark">SEND MESSAGE</button>
-                </form>
-            </div>
+
         </section>
     </main>
 
@@ -272,19 +266,16 @@ if (isset($_POST['upload_pic'])) {
             /* لون الإطار حول الصورة */
         }
 
-        .profile-picture {
-            text-align: center;
-            margin-bottom: 15px;
-        }
 
-        .profile-img {
-            width: 120px;
-            height: 120px;
+        .profile-pic {
+            width: 150px;
+            height: 150px;
             border-radius: 50%;
             object-fit: cover;
-            border: 3px solid #007bff;
-            background-color: #f1f1f1;
+            border: 2px solid #ddd;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
         }
+
 
         .upload-btn {
             display: flex;
@@ -418,70 +409,65 @@ if (isset($_POST['upload_pic'])) {
         }
     </style>
 
-    <script>
-        function filterBlogs() {
-            var input, filter, blogs, blog, h3, p, i, txtValue;
-            input = document.getElementById('searchBar');
-            filter = input.value.toLowerCase();
-            blogs = document.getElementById("blogs");
-            blog = blogs.getElementsByClassName('blog');
-
-            for (i = 0; i < blog.length; i++) {
-                h3 = blog[i].getElementsByTagName("h3")[0];
-                p = blog[i].getElementsByTagName("p")[0];
-                txtValue = h3.textContent + " " + p.textContent;
-                if (txtValue.toLowerCase().indexOf(filter) > -1) {
-                    blog[i].style.display = "";
-                } else {
-                    blog[i].style.display = "none";
-                }
-            }
-        }
-    </script>
 
     <script>
+        document.getElementById('searchForm').addEventListener('submit', function (e) {
+            e.preventDefault(); // Prevent form from submitting normally
+
+            const formData = new FormData(this);
+
+            fetch('user_profile.php', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.text())
+                .then(html => {
+                    // Extract the blogResults section from the returned HTML
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newResults = doc.getElementById('blogResults');
+                    if (newResults) {
+                        document.getElementById('blogResults').innerHTML = newResults.innerHTML;
+                    }
+                });
+        });
+
+
         document.addEventListener('DOMContentLoaded', function () {
             const forms = document.querySelectorAll('.comment-form');
 
             forms.forEach(form => {
                 form.addEventListener('submit', function (e) {
-                    // e.preventDefault();
+                    e.preventDefault(); // 👈 لازم السطر ده لمنع الإرسال العادي
 
-                    const commentText = form.querySelector('.comment-input').value;
-                    const commentSection = form.previousElementSibling;
+                    const commentText = form.querySelector('[name="comment_text"]').value.trim();
+                    const blogId = form.querySelector('[name="blog_id"]').value;
+                    const commentList = form.previousElementSibling;
 
-                    const newComment = document.createElement('div');
-                    newComment.classList.add('comment');
-                    newComment.innerHTML = `<strong>You:</strong> <p class="comment-text">${commentText}</p>`;
+                    if (!commentText) return;
 
-                    commentSection.appendChild(newComment);
-                    form.reset();
+                    fetch('php/add_comment.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: 'comment_text=' + encodeURIComponent(commentText) + '&blog_id=' + encodeURIComponent(blogId)
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                const commentEl = document.createElement('li');
+                                commentEl.className = 'list-group-item';
+                                commentEl.innerHTML = `<strong>${data.username}:</strong> ${data.text}<br><small class="text-muted">${data.created_at}</small>`;
+                                commentList.insertBefore(commentEl, commentList.firstChild);
+                                form.reset();
+                            } else {
+                                alert("Error saving comment!");
+                            }
+                        })
+                        .catch(error => {
+                            console.error("AJAX error:", error);
+                        });
                 });
             });
-        });
-    </script>
-    <script>
-        document.getElementById('commentForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            const commentText = document.getElementById('commentInput').value.trim();
-            if (!commentText) return;
-
-            fetch('views/save_comment.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: 'comment=' + encodeURIComponent(commentText)
-            })
-                .then(response => response.text())
-                .then(result => {
-                    if (result === 'success') {
-                        const newComment = document.createElement('div');
-                        newComment.className = 'comment';
-                        newComment.innerHTML = `<strong>You:</strong><p class="comment-text">${commentText}</p>`;
-                        document.getElementById('commentSection').prepend(newComment);
-                        document.getElementById('commentInput').value = '';
-                    }
-                });
         });
     </script>
 
