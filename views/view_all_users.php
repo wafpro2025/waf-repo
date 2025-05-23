@@ -47,50 +47,15 @@ $query = mysqli_query($con, "SELECT * FROM users");
                 table.style.display = "table";
             }, 500);
 
-
-            search.addEventListener("keyup", function() {
-                const filter = search.value.trim().toLowerCase();
-
-
-                if (filter.length < 3) {
-                    return;
-                }
-
-                if (filter.length === 0) {
+            search.addEventListener("keydown", function(e) {
+                if (e.key === "Enter") {
+                    const filter = search.value.toLowerCase();
                     const rows = table.querySelectorAll("tbody tr");
-                    rows.forEach(row => row.style.display = "");
-                    return;
-                }
-
-
-                fetch("php/validate_search.php", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({
-                            text: filter
-                        })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-
-                        if (data.prediction === 1) {
-                            // إعادة التوجيه إلى صفحة الحظر
-                            window.location.href = "blockpage.php";
-                            return;
-                        }
-
-                        // فلترة الجدول بناءً على النص المدخل
-                        const rows = table.querySelectorAll("tbody tr");
-                        rows.forEach(row => {
-                            const text = row.innerText.toLowerCase();
-                            row.style.display = text.includes(filter) ? "" : "none";
-                        });
-                    })
-                    .catch(err => {
-                        console.error("حدث خطأ في التحقق:", err);
+                    rows.forEach(row => {
+                        const text = row.innerText.toLowerCase();
+                        row.style.display = text.includes(filter) ? "" : "none";
                     });
+                }
             });
         });
     </script>

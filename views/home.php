@@ -26,7 +26,9 @@ $role = $userData['role'];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
-    <link rel="stylesheet" href="">
+
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         /* Basic styling for the entire body */
         body {
@@ -133,86 +135,185 @@ $role = $userData['role'];
         .admin-actions a:hover {
             text-decoration: underline;
         }
+
+        /* Toast notification styles */
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            margin-left: -125px;
+            background-color: #28a745;
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            padding: 12px;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            bottom: 30px;
+            font-size: 17px;
+        }
+
+        .toast.show {
+            visibility: visible;
+            -webkit-animation: fadein 0.5s, fadeout 0.5s 3s;
+            animation: fadein 0.5s, fadeout 0.5s 3s;
+        }
+
+        @keyframes fadein {
+            from {
+                bottom: 0;
+                opacity: 0;
+            }
+
+            to {
+                bottom: 30px;
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeout {
+            from {
+                bottom: 30px;
+                opacity: 1;
+            }
+
+            to {
+                bottom: 0;
+                opacity: 0;
+            }
+        }
     </style>
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 
 <body>
     <!-- Navigation bar section -->
-    <div class="nav">
-        <div class="logo">
-            <p><a href="home.php">Logo</a></p>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4">
+        <a class="navbar-brand" href="home.php">Logo</a>
+        <div class="ms-auto">
+            <a href="admin_add_blog.php" class="btn btn-primary">➕ Add New Blog</a>
+
+            <a class="btn btn-outline-light me-2" href="Change_Profile2.php">Change Profile</a>
+            <a class="btn btn-danger" href="php/logout.php">Log Out</a>
         </div>
-        <div class="right-links">
-            <a href="edit.php">Change Profile</a>
-            <a href="php/logout.php"><button class="btn">Log Out</button></a>
-        </div>
-    </div>
-
-    <main>
-        <div class="container">
-            <?php if ($role === 'admin') { ?>
-                <!-- Section for admin-specific features -->
+    </nav>
 
 
-                <h2>System Logs</h2>
-                <table>
-                    <tr>
-                        <th>User ID</th>
-                        <th>Activity</th>
-                        <th>IP Address</th>
-                        <th>Time</th>
-                    </tr>
-                    <?php
-                    $logs_query = mysqli_query($con, "SELECT logs.*, users.username FROM logs JOIN users ON logs.user_id = users.id ORDER BY log_time DESC");
-                    while ($log = mysqli_fetch_assoc($logs_query)) {
-                        echo "<tr>";
-                        echo "<td>" . htmlspecialchars($log['username']) . "</td>";
-                        echo "<td>" . htmlspecialchars($log['activity']) . "</td>";
-                        echo "<td>" . htmlspecialchars($log['ip_address']) . "</td>";
-                        echo "<td>" . $log['log_time'] . "</td>";
-                        echo "</tr>";
-                    }
-                    ?>
-                </table>
+    <div class="container py-5">
 
-                <h1>Welcome, Admin <?php echo htmlspecialchars($username); ?>!</h1>
-                <p>Manage the users of the WAF system below:</p>
-                <table>
-                    <tr>
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th>Age</th>
-                        <th>Actions</th>
-                    </tr>
-                    <?php
-                    // Fetch all users for admin management
-                    $query = mysqli_query($con, "SELECT * FROM users");
-                    while ($row = mysqli_fetch_assoc($query)) {
-                        echo "<tr>";
-                        echo "<td>" . htmlspecialchars($row['username']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['email']) . "</td>";
-                        echo "<td>" . htmlspecialchars($row['Age']) . "</td>";
-                        echo "<td class='admin-actions'>
+        <?php if ($role === 'admin') { ?>
+            <!-- Section for admin-specific features -->
+
+            <h1>Welcome, Admin <?php echo htmlspecialchars($username); ?>!</h1>
+            <p>Manage the users of the WAF system below:</p>
+
+            <table class="table table-dark table-hover table-bordered">
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Age</th>
+                    <th>Actions</th>
+                </tr>
+                <?php
+                // Fetch all users for admin management
+                $query = mysqli_query($con, "SELECT * FROM users");
+                while ($row = mysqli_fetch_assoc($query)) {
+                    echo "<tr>";
+                    echo "<td>" . htmlspecialchars($row['username']) . "</td>";
+                    echo "<td>" . htmlspecialchars($row['email']) . "</td>";
+                    echo "<td>" . htmlspecialchars($row['Age']) . "</td>";
+                    echo "<td class='admin-actions'>
                                 <a href='edit_user.php?id=" . $row['id'] . "'>Edit</a> | 
                                 <a href='delete_user.php?id=" . $row['id'] . "'>Delete</a>
                               </td>";
-                        echo "</tr>";
-                    }
-                    ?>
-                </table>
-            <?php } else { ?>
-                <!-- Section for regular user profile -->
-                <h1>Welcome, <?php echo htmlspecialchars($username); ?>!</h1>
-                <p>Here is your profile information:</p>
-                <ul>
-                    <li><strong>Name:</strong> <?php echo htmlspecialchars($username); ?></li>
-                    <li><strong>Email:</strong> <?php echo htmlspecialchars($email); ?></li>
-                    <li><strong>Age:</strong> <?php echo htmlspecialchars($age); ?></li>
-                </ul>
-                <p>If you believe you need additional permissions, please contact the admin.</p>
-            <?php } ?>
-        </div>
-    </main>
+                    echo "</tr>";
+                }
+                ?>
+            </table>
+
+
+
+    </div>
+    <br>
+    <br>
+    <h2>System Logs</h2>
+    <table class="table table-dark table-hover table-bordered">
+        <tr>
+            <th>User ID</th>
+            <th>Activity</th>
+            <th>IP Address</th>
+            <th>Time</th>
+        </tr>
+        <?php
+            $logs_query = mysqli_query($con, "SELECT logs.*, users.username FROM logs JOIN users ON logs.user_id = users.id ORDER BY log_time DESC");
+            while ($log = mysqli_fetch_assoc($logs_query)) {
+                echo "<tr>";
+                echo "<td>" . htmlspecialchars($log['username']) . "</td>";
+                echo "<td>" . htmlspecialchars($log['activity']) . "</td>";
+                echo "<td>" . htmlspecialchars($log['ip_address']) . "</td>";
+                echo "<td>" . $log['log_time'] . "</td>";
+                echo "</tr>";
+            }
+        ?>
+    </table>
+
+<?php } else { ?>
+    <!-- Section for regular user profile -->
+    <h1>Welcome, <?php echo htmlspecialchars($username); ?>!</h1>
+    <p>Here is your profile information:</p>
+    <ul>
+        <li><strong>Name:</strong> <?php echo htmlspecialchars($username); ?></li>
+        <li><strong>Email:</strong> <?php echo htmlspecialchars($email); ?></li>
+        <li><strong>Age:</strong> <?php echo htmlspecialchars($age); ?></li>
+    </ul>
+    <p>If you believe you need additional permissions, please contact the admin.</p>
+<?php }
+
+?>
+</main>
+
+<!-- Toasted Group -->
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const params = new URLSearchParams(window.location.search);
+        // التحقق إذا كان تم إضافة مقال بنجاح
+        if (params.get("added") === "true") {
+            // إظهار الرسالة
+            const toastElement = document.getElementById("liveToast");
+            const bsToast = new bootstrap.Toast(toastElement);
+            bsToast.show();
+
+            // إزالة المعلمة من الـ URL بعد عرض التوست
+            setTimeout(() => {
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }, 4000);
+        }
+    });
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const params = new URLSearchParams(window.location.search);
+        // التحقق إذا كان تم إضافة مقال بنجاح
+        if (params.get("added") === "true") {
+            // إظهار الرسالة
+            const toast = document.getElementById("toast");
+            toast.classList.add("show");
+
+            // إزالة الرسالة بعد 3.5 ثواني
+            setTimeout(() => {
+                toast.classList.remove("show");
+                // إزالة المعلمة من الـ URL بعد إظهار الرسالة
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }, 3500); // 3500 ملي ثانية = 3.5 ثانية
+        }
+    });
+</script>
+
+<!-- Bootstrap JS (اختياري لو هتستخدم توست أو مودال أو كومبوننت تفاعلي) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

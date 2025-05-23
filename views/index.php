@@ -39,38 +39,72 @@ if (isset($_POST['submit'])) {
     $result = mysqli_query($con, $query) or die("Query error: " . mysqli_error($con));
     $row = mysqli_fetch_assoc($result);
 
+
+
+
+    /*  if ($row) {
+         // Store user information in the session
+         $_SESSION['valid'] = $row['email'];
+         $_SESSION['username'] = $row['username'];
+         $_SESSION['Age'] = $row['Age'];
+         $_SESSION['id'] = $row['id'];
+         $_SESSION['role'] = $row['role']; // Save the user's role (admin/user/soc_analyst)
+
+         // Get IP Address
+         $ip_address = $_SERVER['REMOTE_ADDR'];
+
+         // Log successful login
+         log_activity($row['id'], "User logged in", $ip_address);
+
+         // Redirect based on the role
+         if ($row['role'] === 'admin') {
+             header("Location: home.php");
+         } elseif ($row['role'] === 'soc_analyst') {
+             header("Location: soc.php");
+         } else {
+             header("Location: user_profile.php");
+         }
+         exit();
+     } else {
+         $login_error = "Invalid email or password!";
+     } */
+
     if ($row) {
+        // تحقق من حالة الحساب
+        if ($row['status'] !== 'active') {
+            header("Location: index.php?blocked=true");
+            exit();
+        }
+
         // Store user information in the session
         $_SESSION['valid'] = $row['email'];
         $_SESSION['username'] = $row['username'];
         $_SESSION['Age'] = $row['Age'];
         $_SESSION['id'] = $row['id'];
-        $_SESSION['role'] = $row['role']; // Save the user's role (admin/user/soc_analyst)
+        $_SESSION['role'] = $row['role'];
 
-        // Get IP Address
+        // سجل الدخول
         $ip_address = $_SERVER['REMOTE_ADDR'];
-
-        // Log successful login
         log_activity($row['id'], "User logged in", $ip_address);
 
-        // Redirect based on the role
+        // التوجيه حسب الدور
         if ($row['role'] === 'admin') {
             header("Location: home.php"); // Admin profile page
         } elseif ($row['role'] === 'soc_analyst') {
-            header("Location: soc_analyst.php"); // SOC Analyst dashboard
+            header("Location: soc.php");
         } else {
             header("Location: user_profile.php"); // Normal user profile page
         }
         exit();
-    } else {
-        // Show error if login fails
-        echo "<div class='message'>
-            <p>Invalid email or password!</p>
-        </div>";
     }
 }
 ?>
 
+<?php
+if (isset($_GET['blocked']) && $_GET['blocked'] === 'true') {
+    echo "<script>alert('Your account has been blocked. Please contact the administrator at this gmail wafproject00@gmail.com. ');</script>";
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -190,7 +224,33 @@ if (isset($_POST['submit'])) {
         .sign-up-link a:hover {
             text-decoration: underline;
             color: #16A085;
-            /* Change color on hover */
+        }
+
+        label {
+            margin-right: 10px;
+            /* إضافة مسافة بين الـ label وحقل الإدخال */
+        }
+
+
+        #togglePassword {
+            position: relative;
+            right: 0px;
+            top: -19px;
+            transform: translateY(-50%);
+            font-size: 13px;
+            color: skyblue;
+            cursor: pointer;
+            z-index: 1;
+            background: none;
+            border: none;
+            padding: 0px 0px;
+            border-radius: 5px;
+            margin-left: 250px;
+        }
+
+        #errorBox {
+            color: yellow;
+            margin: 10px 0;
         }
     </style>
 </head>
@@ -206,8 +266,12 @@ if (isset($_POST['submit'])) {
                 </div>
                 <div class="field input">
                     <label for="password">Password</label>
-                    <input type="password" name="password" id="password" autocomplete="off" required>
+                    <input type="password" name="password" id="password" autocomplete="off" required />
+                    <span id="togglePassword">👁️ Show</span>
+
                 </div>
+
+
                 <div class="field">
                     <input type="submit" name="submit" class="btn" value="Login">
                 </div>
@@ -217,6 +281,38 @@ if (isset($_POST['submit'])) {
             </form>
         </div>
     </div>
+
+    <script>
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.textContent = type === 'password' ? '👁️ Show' : '🙈 Hide';
+        });
+
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const errorBox = document.getElementById('errorBox');
+
+            if (!email || !password) {
+                e.preventDefault();
+                errorBox.textContent = "من فضلك املأ جميع الحقول.";
+                return;
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                e.preventDefault();
+                errorBox.textContent = "البريد الإلكتروني غير صحيح.";
+                return;
+            }
+
+            errorBox.textContent = "";
+            document.getElementById('submitBtn').value = "جاري الدخول...";
+        });
+    </script>
 </body>
 
 </html>

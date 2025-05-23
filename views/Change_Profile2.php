@@ -1,7 +1,4 @@
-<!-- related to user profile page 
- -->
-
-
+<!--    related to home page admin page     -->
 <?php
 session_start();
 include("php/config.php");// Ensure you're including your database connection
@@ -43,7 +40,7 @@ if (isset($_POST['submit'])) {
         // Log profile update
         log_activity($id, "Updated profile information", $ip_address);
         echo "<div class='alert alert-success mt-3'>Profile Updated!</div>";
-        echo "<a href='user_profile.php' class='btn btn-success mt-3'>Go Home</a>";
+        echo "<a href='home.php' class='btn btn-success mt-3'>Go Home</a>";
     } else {
         echo "Error: " . mysqli_error($con);
     }
@@ -59,7 +56,6 @@ if (isset($_POST['submit'])) {
     <title>Change Profile</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <style>
         body {
             background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
@@ -101,10 +97,10 @@ if (isset($_POST['submit'])) {
 <body>
     <div class="nav d-flex justify-content-between p-3">
         <div class="logo">
-            <a class="navbar-brand" href="user_profile.php">Logo</a>
+            <a class="navbar-brand" href="home.php" title="go to your profile">Logo</a>
         </div>
         <div class="right-links">
-            <a href="user_profile.php">
+            <a href="home.php">
                 <button class="btn btn-danger" title="go back">
                     <i class="fas fa-arrow-left"></i>Back
                 </button>
