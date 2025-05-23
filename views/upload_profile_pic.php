@@ -1,6 +1,8 @@
 <?php
 session_start();
 include("php/config.php");
+include("php/smart_security_check.php");
+smartSecurityCheck($_SERVER['REQUEST_URI']);
 
 if (!isset($_SESSION['id'])) {
     header("Location: index.php");
@@ -11,6 +13,7 @@ $user_id = $_SESSION['id'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_pic'])) {
     $file = $_FILES['profile_pic'];
+    smartsecuritycheck(basename($file['name']));
     $fileName = basename($file['name']);
     $targetDir = "uploads/";
     $targetFile = $targetDir . time() . "_" . $fileName;
@@ -21,7 +24,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_pic'])) {
     if (in_array($fileType, $allowed)) {
         if (move_uploaded_file($file['tmp_name'], $targetFile)) {
             // Update profile_pic in database
+            smartSecurityCheck($targetFile);
             $relativePath = $targetFile; // Path to store in DB
+
             $update = mysqli_query($con, "UPDATE users SET profile_pic='$relativePath' WHERE id=$user_id");
 
             if ($update) {
@@ -109,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_pic'])) {
     </div>
     <h2>Change Profile Picture</h2>
     <br>
-    <form method="post" enctype="multipart/form-data"  >
+    <form method="post" enctype="multipart/form-data">
         <input type="file" name="profile_pic" class="btn btn-secondary" required>
         <button type="submit" class="btn btn-primary">Upload</button>
     </form>

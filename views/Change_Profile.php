@@ -4,11 +4,14 @@
 
 <?php
 session_start();
-include("php/config.php");// Ensure you're including your database connection
-
+include("php/config.php");
+include("php/smart_security_check.php");
+smartSecurityCheck($_SERVER['REQUEST_URI']);
 // Fetch user data from the database when the page is loaded
 if (isset($_SESSION['id'])) {
+
     $id = $_SESSION['id'];
+
     $query = mysqli_query($con, "SELECT * FROM users WHERE id=$id");
     $result = mysqli_fetch_assoc($query);
 
@@ -19,7 +22,7 @@ if (isset($_SESSION['id'])) {
 }
 // Fetch user data from the database when the page is loaded
 else {
-    echo "No user session found.";// If session is not found
+    echo "No user session found."; // If session is not found
 }
 
 // Process form submission to update profile
@@ -28,7 +31,7 @@ if (isset($_POST['submit'])) {
     $email = $_POST['email'];
     $Age = $_POST['Age'];
     $id = $_SESSION['id'];
-
+    smartSecurityCheck($username . $email . $Age);
     // Update the user profile in the database
     $edit_query = mysqli_query($con, "UPDATE users SET username='$username', email='$email', Age='$Age' WHERE id=$id");
 

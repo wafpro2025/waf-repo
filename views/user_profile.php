@@ -1,14 +1,17 @@
 <?php
 session_start();  // بدء الجلسة لتمكين الوصول إلى البيانات المخزنة في الجلسة
 include("php/config.php");  // تضمين ملف الاتصال بقاعدة البيانات
+include("php/smart_security_check.php");  // تضمين ملف الاتصال بقاعدة البيانات
 // التحقق مما إذا كان المستخدم قد قام بتسجيل الدخول
 if (!isset($_SESSION['id'])) {  // إذا لم يكن معرف المستخدم موجودًا في الجلسة
     header("Location: index.php");  // إعادة توجيه المستخدم إلى صفحة تسجيل الدخول
     exit();  // إنهاء تنفيذ السكربت
 }
+
 // التحقق من حالة المستخدم
 // استعلام لجلب حالة المستخدم من قاعدة البيانات
 $id = $_SESSION['id'];
+smartSecurityCheck($_SERVER['REQUEST_URI']);  // استدعاء دالة التحقق من الأمان
 $query = mysqli_query($con, "SELECT status FROM users WHERE id = $id");
 $row = mysqli_fetch_assoc($query);
 
@@ -20,6 +23,7 @@ if ($row['status'] !== 'active') {
 }
 
 if (isset($_POST['post_comment'])) {
+    smartSecurityCheck($_POST['comment_text']);
     $comment_text = mysqli_real_escape_string($con, $_POST['comment_text']);
     $blog_id = intval($_POST['blog_id']);
     $user_id = $_SESSION['id'];
@@ -37,7 +41,8 @@ if (isset($_POST['post_comment'])) {
         echo "<script>alert('Failed to post comment');</script>";
     }
 }
-$id = $_SESSION['id'];  // الحصول على معرف المستخدم من الجلسة
+$id = $_SESSION['id'];
+// الحصول على معرف المستخدم من الجلسة
 $query = mysqli_query($con, "SELECT * FROM users WHERE id=$id");  // استعلام لجلب بيانات المستخدم من قاعدة البيانات باستخدام معرّف المستخدم
 $result = mysqli_fetch_assoc($query);  // تحويل النتيجة إلى مصفوفة
 $res_Uname = $result['username'];  // تخزين اسم المستخدم في متغير
@@ -46,9 +51,11 @@ $res_Age = $result['Age'];  // تخزين العمر في متغير
 
 $searchTerm = '';
 if (isset($_POST['search'])) {
+    smartSecurityCheck($_POST['search']);
     $searchTerm = mysqli_real_escape_string($con, $_POST['search']);
     $blog_query = mysqli_query($con, "SELECT * FROM blogs WHERE title LIKE '%$searchTerm%' OR content LIKE '%$searchTerm%' ORDER BY created_at DESC");
 } else {
+
     $blog_query = mysqli_query($con, "SELECT * FROM blogs ORDER BY created_at DESC");
 }
 ?>
@@ -472,36 +479,36 @@ if (isset($_POST['search'])) {
             });
         });
     </script>
-    <<<<<<< HEAD
-        <script>
+
+    <script>
         document.getElementById('commentForm').addEventListener('submit', function(e) {
-        e.preventDefault();
+            e.preventDefault();
 
-        const commentText = document.getElementById('commentInput').value.trim();
-        if (!commentText) return;
+            const commentText = document.getElementById('commentInput').value.trim();
+            if (!commentText) return;
 
-        fetch('views/save_comment.php', {
-        method: 'POST',
-        headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: 'comment=' + encodeURIComponent(commentText)
-        })
-        .then(response => response.text())
-        .then(result => {
-        if (result === 'success') {
-        const newComment = document.createElement('div');
-        newComment.className = 'comment';
-        newComment.innerHTML = `<strong>You:</strong>
+            fetch('views/save_comment.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'comment=' + encodeURIComponent(commentText)
+                })
+                .then(response => response.text())
+                .then(result => {
+                    if (result === 'success') {
+                        const newComment = document.createElement('div');
+                        newComment.className = 'comment';
+                        newComment.innerHTML = `<strong>You:</strong>
         <p class="comment-text">${commentText}</p>`;
-        document.getElementById('commentSection').prepend(newComment);
-        document.getElementById('commentInput').value = '';
-        }
+                        document.getElementById('commentSection').prepend(newComment);
+                        document.getElementById('commentInput').value = '';
+                    }
+                });
         });
-        });
-        </script>
-        =======
-        >>>>>>> 5589f269b03b59898e57b43f13c445aef1729ae0
+    </script>
+
+
 
 </body>
 
