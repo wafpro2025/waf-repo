@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost
--- Generation Time: May 14, 2025 at 11:10 AM
--- Server version: 10.4.28-MariaDB
--- PHP Version: 8.2.4
+-- Host: 127.0.0.1
+-- Generation Time: May 23, 2025 at 11:25 PM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -71,6 +71,29 @@ INSERT INTO `blogs` (`id`, `title`, `content`, `created_at`) VALUES
 (4, '🔒 What is a Web Application Firewall (WAF)?', 'Hello Readers,\nA Web Application Firewall (WAF) protects web applications by filtering and monitoring HTTP traffic between a web application and the Internet.\nIt helps prevent attacks such as SQL injection, cross-site scripting (XSS), and other vulnerabilities.\nWAFs are essential for ensuring the security of any online service or website', '2025-05-13 04:10:37'),
 (6, '🛡️ Best Practices for Web Application Security', 'Besides using a WAF, it\'s crucial to perform regular security updates, patch known\r\n                        vulnerabilities, conduct security audits, and follow secure coding practices.\r\n                    Layered security measures provide stronger protection for web applications and help maintain the\r\n                        trust of users and clients.', '2025-05-13 04:12:25'),
 (7, '⚡ Why WAFs are Crucial in 2025', 'With the increasing sophistication of cyber threats, having a WAF is no longer optional.\r\n                    It acts as the first line of defense against many types of attacks targeting application\r\n                        vulnerabilities.\r\n                    The role of WAFs is critical especially as more businesses shift their operations online,\r\n                        making\r\n                        them prime targets for attackers.', '2025-05-13 04:18:43');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `client_fingerprint_block_list`
+--
+
+CREATE TABLE `client_fingerprint_block_list` (
+  `id` int(11) NOT NULL,
+  `client_signature` varchar(255) NOT NULL,
+  `failed_attempts` int(11) DEFAULT 0,
+  `blocked_until` datetime DEFAULT NULL,
+  `last_attempt_time` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+--
+-- Dumping data for table `client_fingerprint_block_list`
+--
+
+INSERT INTO `client_fingerprint_block_list` (`id`, `client_signature`, `failed_attempts`, `blocked_until`, `last_attempt_time`) VALUES
+(1, '08de8467838ac1352f4b1cd585fc5e2a42160f570cba81bf2c39dd01bf4931a9', 1, NULL, '2025-05-23 21:09:24'),
+(2, 'c08ebc10154732bf137a1de547750a888e48381f0cc2ca45a032859ce889177d', 0, '2025-05-23 23:11:05', '2025-05-24 00:10:06'),
+(3, '::1Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0', 2, NULL, '2025-05-23 21:20:12');
 
 -- --------------------------------------------------------
 
@@ -163,7 +186,9 @@ INSERT INTO `logs` (`log_id`, `user_id`, `activity`, `ip_address`, `log_time`) V
 (140, 5, 'Posted a comment', '::1', '2025-05-14 10:23:59'),
 (141, 16, 'Posted a comment', '::1', '2025-05-14 10:24:48'),
 (142, 16, 'Deleted comment ID 33', '::1', '2025-05-14 10:24:53'),
-(143, 16, 'Posted a comment', '::1', '2025-05-14 10:25:04');
+(143, 16, 'Posted a comment', '::1', '2025-05-14 10:25:04'),
+(144, 17, 'Posted a comment', '::1', '2025-05-23 23:25:14'),
+(145, 17, 'Deleted comment ID 35', '::1', '2025-05-23 23:25:22');
 
 -- --------------------------------------------------------
 
@@ -220,7 +245,8 @@ INSERT INTO `users` (`id`, `username`, `email`, `password`, `Age`, `role`, `stat
 (11, 'user', 'user@g.c', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', 23, 'user', 'active', '2025-04-17 15:04:40', 'default.jpg'),
 (12, 'loai Esam ', 'l@g.c', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', 27678, 'user', 'active', '2025-05-14 02:21:35', 'uploads/1747113530_IMG_20210511_122911_468.jpeg'),
 (15, 'soc ana', 'soc@g.c', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', 12, 'soc_analyst', 'active', '2025-05-14 10:21:49', 'default.jpg'),
-(16, 'walid mohsen', 'w@g.c', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', 23, 'user', 'active', '2025-05-14 10:22:19', 'default.jpg');
+(16, 'walid mohsen', 'w@g.c', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', 23, 'user', 'active', '2025-05-14 10:22:19', 'default.jpg'),
+(17, 'ahmed', 'ahmed@g.c', '1234', 22, 'user', 'active', '2025-05-23 23:35:33', 'uploads/1748032533__MG_7715.JPG');
 
 -- --------------------------------------------------------
 
@@ -256,6 +282,12 @@ ALTER TABLE `alerts`
 -- Indexes for table `blogs`
 --
 ALTER TABLE `blogs`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `client_fingerprint_block_list`
+--
+ALTER TABLE `client_fingerprint_block_list`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -323,16 +355,22 @@ ALTER TABLE `blogs`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
+-- AUTO_INCREMENT for table `client_fingerprint_block_list`
+--
+ALTER TABLE `client_fingerprint_block_list`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
 -- AUTO_INCREMENT for table `comments`
 --
 ALTER TABLE `comments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT for table `logs`
 --
 ALTER TABLE `logs`
-  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=144;
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=146;
 
 --
 -- AUTO_INCREMENT for table `notifications`
@@ -350,7 +388,7 @@ ALTER TABLE `settings`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `waf_rules`
